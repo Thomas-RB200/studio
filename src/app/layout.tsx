@@ -1,10 +1,11 @@
-import type { Metadata } from "next";
-import { Toaster } from "@/components/ui/toaster";
-import "./globals.css";
+import type {Metadata} from 'next';
+import './globals.css';
+import { Toaster } from "@/components/ui/toaster"
+import Providers from '@/components/providers';
 
 export const metadata: Metadata = {
-  title: "Padelicius Score",
-  description: "Live padel scoring and broadcasting.",
+  title: 'Pantalla Global de Marcadores de Pádel',
+  description: 'A global paddle scoreboard application with customization and management features.',
 };
 
 export default function RootLayout({
@@ -13,17 +14,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap"
-          rel="stylesheet"
-        />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet" />
       </head>
-      <body className="font-body antialiased h-full">
-        {children}
+      <body className="font-body antialiased">
+        <Providers>
+          {children}
+        </Providers>
         <Toaster />
       </body>
     </html>

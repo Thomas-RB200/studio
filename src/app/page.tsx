@@ -1,65 +1,73 @@
-import { Scoreboard, type GameState } from "@/components/scoreboard";
-import { Header } from "@/components/header";
-import { PadelIcon } from "@/components/icons";
+'use client';
 
-// Mock data for multiple games
-const games: GameState[] = [
-  {
-    courtName: "Court 1",
-    team1: { name: "Alex / Juan", points: "30", games: 4, sets: 1 },
-    team2: { name: "Maria / Sofia", points: "40", games: 5, sets: 0 },
-  },
-  {
-    courtName: "Court 2",
-    team1: { name: "Carlos / David", points: "15", games: 2, sets: 1 },
-    team2: { name: "Laura / Ana", points: "0", games: 1, sets: 1 },
-  },
-  {
-    courtName: "Court 3",
-    team1: { name: "Pedro / Miguel", points: "40", games: 6, sets: 1 },
-    team2: { name: "Lucia / Elena", points: "40", games: 6, sets: 1 },
-    isDeuce: true,
-  },
-  {
-    courtName: "Court 4",
-    team1: { name: "Javi / Sergio", points: "ADV", games: 3, sets: 0 },
-    team2: { name: "Paula / Cris", points: "40", games: 3, sets: 0 },
-  },
-   {
-    courtName: "Court 5",
-    team1: { name: "Mario / Oscar", points: "0", games: 0, sets: 0 },
-    team2: { name: "Eva / Sara", points: "0", games: 0, sets: 0 },
-  },
-  {
-    courtName: "Court 6",
-    team1: { name: "Ruben / Victor", points: "30", games: 5, sets: 0 },
-    team2: { name: "Nerea / Alba", points: "15", games: 4, sets: 1 },
-  },
-];
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useScoreboard } from '@/context/ScoreboardContext';
+import type { UserRole } from '@/lib/types';
 
-export default function PublicDashboard() {
+import DashboardLayout from '@/components/dashboard-layout';
+import ThemeCustomizer from '@/components/theme-customizer';
+import AdsManager from '@/components/ads-manager';
+import UserManager from '@/components/user-manager';
+import LiveView from '@/components/live-view';
+import OverlayLinks from '@/components/overlay-links';
+
+// Hyper Admin, Super Admin, and Admin have access to the dashboard.
+const ADMIN_ROLES: UserRole[] = ['Hyper Admin', 'Super Admin', 'Admin'];
+
+export default function DashboardPage() {
+  const [activeView, setActiveView] = useState('live');
+  const { 
+    theme, setTheme, 
+    ads, setAds,
+    users, setUsers,
+    currentUser,
+  } = useScoreboard();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!currentUser) {
+      router.push('/login');
+    } else if (!ADMIN_ROLES.includes(currentUser.role)) {
+      // If a user without admin rights (like a Referee) lands here, redirect them.
+      router.push('/referee');
+    }
+  }, [currentUser, router]);
+
+  useEffect(() => {
+    // If the current user is an 'Admin', default their view to 'users'
+    // and prevent them from seeing other views if they try to navigate.
+    if (currentUser?.role === 'Admin') {
+      // Admins can see live, users, and overlays.
+      if (!['live', 'users', 'overlays'].includes(activeView)) {
+         setActiveView('users'); // Default to users view.
+      }
+    }
+  }, [currentUser, activeView]);
+
+  const renderView = () => {
+    switch (activeView) {
+      case 'theme':
+        return <ThemeCustomizer theme={theme} setTheme={setTheme} />;
+      case 'ads':
+        return <AdsManager ads={ads} setAds={setAds} />;
+      case 'users':
+        return <UserManager users={users} setUsers={setUsers} />;
+      case 'overlays':
+        return <OverlayLinks />;
+      case 'live':
+      default:
+        return <LiveView />;
+    }
+  };
+
+  if (!currentUser || !ADMIN_ROLES.includes(currentUser.role)) {
+    return <div className="flex items-center justify-center h-screen">Authenticating...</div>;
+  }
+
   return (
-    <div className="flex flex-col min-h-screen bg-background text-foreground font-body">
-      <Header />
-      <main className="flex-1 p-4 sm:p-6 md:p-8">
-        <div className="flex items-center gap-4 mb-8">
-            <PadelIcon className="w-10 h-10 text-primary" />
-            <h1 className="text-3xl font-bold tracking-tight font-headline text-foreground/90">
-                Live Matches
-            </h1>
-        </div>
-        <div className="grid grid-cols-[repeat(auto-fit,minmax(350px,1fr))] gap-6">
-          {games.map((game, index) => (
-            <Scoreboard key={index} {...game} />
-          ))}
-        </div>
-      </main>
-      <footer
-        className="h-16 flex items-center justify-center bg-muted/50 border-t"
-        style={{ marginTop: 'auto' }}
-      >
-        <p className="text-sm text-muted-foreground">Advertisement Space</p>
-      </footer>
-    </div>
+    <DashboardLayout activeView={activeView} setActiveView={setActiveView}>
+      {renderView()}
+    </DashboardLayout>
   );
 }

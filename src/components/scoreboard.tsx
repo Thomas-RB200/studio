@@ -1,126 +1,165 @@
-import { Swords, Trophy, Clock } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+'use client';
+
+import type { Theme, TimerState } from '@/lib/types';
+import { Card, CardContent } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
+import { Clock, Dumbbell, Timer as TimerIcon } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
 import { cn } from "@/lib/utils";
-import { Separator } from "./ui/separator";
 
-type TeamState = {
-  name: string;
-  points: string;
-  games: number;
-  sets: number;
-};
-
-export type GameState = {
-  courtName: string;
-  team1: TeamState;
-  team2: TeamState;
-  isDeuce?: boolean;
-};
-
-export type ScoreboardProps = GameState & {
+interface ScoreboardProps {
+  teams: { teamA: string; teamB: string };
+  score: {
+    teamA: { points: number; games: number; sets: number };
+    teamB: { points: number; games: number; sets: number };
+  };
+  pointValues: string[];
+  timers: TimerState;
+  theme: Theme;
+  isReadOnly?: boolean;
   isOverlay?: boolean;
-  isScoringPage?: boolean;
+  compact?: boolean;
+}
+
+const formatTime = (totalSeconds: number): string => {
+    if (totalSeconds < 0) totalSeconds = 0;
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = Math.floor(totalSeconds % 60);
+    if (hours > 0) {
+      return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    }
+    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 };
 
+const DynamicTimerDisplay = ({ timers, theme, isOverlay = false }: { timers: TimerState; theme: Theme; isOverlay?: boolean }) => {
+  const [now, setNow] = useState(0);
 
-export function Scoreboard({ courtName, team1, team2, isDeuce, isOverlay = false, isScoringPage = false }: ScoreboardProps) {
-  
-  if (isScoringPage) {
-    const TeamRow = ({ name, sets, games, points }: TeamState) => (
-      <div className="flex justify-between items-center py-2">
-        <p className="text-lg text-muted-foreground truncate w-1/2">{name}</p>
-        <div className="flex gap-4 md:gap-8 items-center font-bold text-2xl">
-          <span className="text-primary w-8 text-center">{sets}</span>
-          <span className="text-primary w-8 text-center">{games}</span>
-          <span className="text-primary w-8 text-center">{points}</span>
-        </div>
+  useEffect(() => {
+    // Set the initial time on the client to start the timer
+    setNow(Date.now());
+    
+    // Set up the interval to update the time every second
+    const intervalId = setInterval(() => {
+      setNow(Date.now());
+    }, 1000);
+
+    // Clean up the interval on component unmount
+    return () => clearInterval(intervalId);
+  }, []);
+
+  // --- Static Calculation for Server-Side Rendering ---
+  // If `now` is 0, it means we're on the server or in the very first client render before useEffect runs.
+  // In this case, we show a static, non-ticking time to prevent hydration mismatch.
+  if (now === 0) {
+    const staticTime = formatTime(timers.accumulatedTime);
+    const overlayTextStyle = isOverlay ? { textShadow: '1px 1px 2px rgba(0,0,0,0.7)' } : {};
+    const overlayIconStyle = isOverlay ? { filter: 'drop-shadow(1px 1px 1px rgba(0,0,0,0.5))' } : {};
+    return (
+      <div className="flex items-baseline gap-2">
+        <Clock className="h-4 w-4" style={{ ...overlayIconStyle, color: theme.textColor }} />
+        <span className="text-lg font-bold font-mono" style={{ ...overlayTextStyle, color: theme.textColor }}>{staticTime}</span>
       </div>
     );
-
-    return (
-      <Card>
-        <CardContent className="p-4 space-y-1">
-           <div className="flex justify-end pr-[6px]">
-             <div className="flex gap-4 md:gap-8 items-center font-semibold text-xs text-muted-foreground">
-                <span className="w-8 text-center">SETS</span>
-                <span className="w-8 text-center">JUEGOS</span>
-                <span className="w-8 text-center">PUNTOS</span>
-             </div>
-          </div>
-          <TeamRow {...team1} />
-          <Separator />
-          <TeamRow {...team2} />
-          <Separator />
-          <div className="flex items-center gap-2 text-muted-foreground pt-2">
-            <Clock className="w-5 h-5" />
-            <span>00:00</span>
-          </div>
-        </CardContent>
-      </Card>
-    );
   }
 
-  if (isOverlay) {
-    return (
-        <div className="bg-slate-900/80 text-white p-4 rounded-lg border-2 border-primary/50 shadow-2xl backdrop-blur-sm w-[450px]">
-            <h2 className="text-center font-bold text-lg mb-2 text-primary tracking-wider uppercase">{courtName}</h2>
-            <div className="flex justify-between items-center mb-2">
-                <span className="font-semibold text-lg">{team1.name}</span>
-                <span className="font-semibold text-lg">{team2.name}</span>
-            </div>
-            <div className="flex justify-between items-center font-mono text-5xl font-bold">
-                <div className="flex gap-4">
-                    <span>{team1.sets}</span>
-                    <span>{team1.games}</span>
-                </div>
-                <span className="text-primary">{team1.points}</span>
-                <Swords className="w-8 h-8 text-white/50" />
-                <span className="text-primary">{team2.points}</span>
-                <div className="flex gap-4">
-                    <span>{team2.games}</span>
-                    <span>{team2.sets}</span>
-                </div>
-            </div>
-             {isDeuce && <p className="text-center mt-2 text-xl font-bold text-amber-300 animate-pulse">DEUCE</p>}
-        </div>
-    );
+  // --- Live Calculation for Client-Side Rendering ---
+  let displayValue: string;
+  let displayLabel = '';
+  let displayIcon: React.ElementType = Clock;
+  let timeColor = theme.textColor;
+
+  let gameSeconds = timers.accumulatedTime;
+  if (timers.isGameRunning && timers.gameStartTime) {
+    gameSeconds += (now - timers.gameStartTime) / 1000;
+  }
+  const gameTimeValue = formatTime(gameSeconds);
+
+  const isCountdownActive = timers.activeCountdown.type && timers.activeCountdown.endTime && timers.activeCountdown.endTime > now;
+
+  if (isCountdownActive) {
+    const remainingSeconds = Math.ceil((timers.activeCountdown.endTime! - now) / 1000);
+    displayValue = formatTime(remainingSeconds);
+    if (timers.activeCountdown.type === 'serve') {
+      displayLabel = 'Serve Time';
+      displayIcon = TimerIcon;
+      timeColor = '#f59e0b'; // amber-500
+    } else { // warmup
+      displayLabel = 'Warm-up';
+      displayIcon = Dumbbell;
+      timeColor = '#3b82f6'; // blue-500
+    }
+  } else {
+    displayValue = gameTimeValue;
   }
 
+  const Icon = displayIcon;
+  const overlayTextStyle = isOverlay ? { textShadow: '1px 1px 2px rgba(0,0,0,0.7)' } : {};
+  const overlayIconStyle = isOverlay ? { filter: 'drop-shadow(1px 1px 1px rgba(0,0,0,0.5))' } : {};
+  
   return (
-    <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
-      <CardContent className="p-4 md:p-6">
-        <h3 className="text-center text-sm font-semibold text-muted-foreground mb-2">{courtName}</h3>
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 mb-4">
-            <p className="text-base font-semibold truncate text-left">{team1.name}</p>
-            <Swords className="w-6 h-6 text-primary/80"/>
-            <p className="text-base font-semibold truncate text-right">{team2.name}</p>
-        </div>
-        <div className="bg-card-foreground/5 dark:bg-card-foreground/10 rounded-lg p-4">
-            <div className="grid grid-cols-[auto_auto] items-center justify-between">
-                <div className="flex items-center gap-2">
-                     {Array.from({ length: Math.max(1, team1.sets) }).map((_, i) => (
-                        <Trophy key={i} className={cn("w-5 h-5", team1.sets > i ? 'text-primary' : 'text-muted-foreground/30')} />
-                    ))}
-                </div>
-                <div className="flex items-center gap-2 justify-end">
-                     {Array.from({ length: Math.max(1, team2.sets) }).map((_, i) => (
-                        <Trophy key={i} className={cn("w-5 h-5", team2.sets > i ? 'text-primary' : 'text-muted-foreground/30')} />
-                    ))}
-                </div>
-            </div>
-            <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 font-mono mt-2 text-4xl font-bold">
-                <p className="text-left">{team1.games}</p>
-                <div></div>
-                <p className="text-right">{team2.games}</p>
-            </div>
-            <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 font-mono mt-1 text-5xl font-bold text-primary">
-                <p className={cn("text-left", team1.points === 'ADV' && 'text-accent')}>{team1.points}</p>
-                {isDeuce && <p className="text-center text-xl text-amber-500 animate-pulse">DEUCE</p>}
-                {!isDeuce && <div></div>}
-                <p className={cn("text-right", team2.points === 'ADV' && 'text-accent')}>{team2.points}</p>
-            </div>
-        </div>
-      </CardContent>
-    </Card>
+     <div className="flex items-baseline gap-2">
+        <Icon className="h-4 w-4" style={{ ...overlayIconStyle, color: theme.textColor }} />
+        <span className="text-lg font-bold font-mono" style={{ ...overlayTextStyle, color: timeColor }}>{displayValue}</span>
+        {displayLabel && <span className="text-sm uppercase tracking-wider" style={{ ...overlayTextStyle, color: theme.textColor }}>{displayLabel}</span>}
+    </div>
+  );
+};
+
+
+const Scoreboard = ({
+  teams,
+  score,
+  pointValues,
+  timers,
+  theme,
+  isReadOnly = false,
+  isOverlay = false,
+  compact = false,
+}: ScoreboardProps) => {
+  const overlayTextStyle = isOverlay ? { textShadow: '2px 2px 3px rgba(0,0,0,0.8)' } : {};
+  
+  return (
+      <Card className={cn("w-full", isOverlay ? "shadow-none border-none bg-transparent" : "shadow-lg border bg-card")}>
+          <CardContent className={cn("p-0", isOverlay && "bg-card/90 rounded-lg")}>
+              <Table>
+                  <TableBody>
+                      {[
+                          { name: teams.teamA, score: score.teamA, key: 'teamA' as const },
+                          { name: teams.teamB, score: score.teamB, key: 'teamB' as const }
+                          
+                      ].map((team) => (
+                          <TableRow key={team.key} className="border-b-0 hover:bg-transparent">
+                              <TableCell className={cn(
+                                "font-bold truncate text-primary",
+                                compact ? "text-base md:text-lg py-2 px-1" : "text-xl md:text-2xl py-3 px-2"
+                              )} style={{...overlayTextStyle, color: isOverlay ? theme.primaryColor : ''}}>{team.name}</TableCell>
+                              <TableCell className={cn(
+                                "text-center font-bold text-accent",
+                                compact ? "text-lg md:text-xl p-2" : "text-2xl md:text-4xl p-3"
+                              )} style={{...overlayTextStyle, color: isOverlay ? theme.accentColor : ''}}>{pointValues[team.score.points]}</TableCell>
+                              <TableCell className={cn(
+                                "text-center font-bold text-accent",
+                                compact ? "text-lg md:text-xl p-2" : "text-2xl md:text-4xl p-3"
+                              )} style={{...overlayTextStyle, color: isOverlay ? theme.accentColor : ''}}>{team.score.games}</TableCell>
+                              <TableCell className={cn(
+                                "text-center font-bold text-accent",
+                                compact ? "text-lg md:text-xl p-2" : "text-2xl md:text-4xl p-3"
+                              )} style={{...overlayTextStyle, color: isOverlay ? theme.accentColor : ''}}>{team.score.sets}</TableCell>
+                          </TableRow>
+                      ))}
+                  </TableBody>
+              </Table>
+          </CardContent>
+           <Separator className={cn(compact ? 'mx-2' : 'mx-4', isOverlay && "bg-white/30")} />
+           <CardContent className={cn("p-0 flex", isOverlay && "bg-card/90 rounded-lg")}>
+             <div className={cn("w-full", compact ? "px-2 py-1" : "px-4 py-2")}>
+                <DynamicTimerDisplay timers={timers} theme={theme} isOverlay={isOverlay} />
+             </div>
+          </CardContent>
+      </Card>
   );
 }
+
+export default Scoreboard;
