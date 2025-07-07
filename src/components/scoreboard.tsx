@@ -1,19 +1,16 @@
 'use client';
 
-import type { Theme, TimerState } from '@/lib/types';
+import type { Theme, TimerState, Scoreboard as ScoreboardData } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableRow, TableHeader, TableHead } from '@/components/ui/table';
 import { Clock, Dumbbell, Timer as TimerIcon } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { cn } from "@/lib/utils";
 
 interface ScoreboardProps {
   teams: { teamA: string; teamB: string };
-  score: {
-    teamA: { points: number; games: number; sets: number };
-    teamB: { points: number; games: number; sets: number };
-  };
+  score: ScoreboardData['score'];
   pointValues: string[];
   timers: TimerState;
   theme: Theme;
@@ -114,39 +111,59 @@ const Scoreboard = ({
   pointValues,
   timers,
   theme,
-  isReadOnly = false,
   isOverlay = false,
   compact = false,
 }: ScoreboardProps) => {
   const overlayTextStyle = isOverlay ? { textShadow: '2px 2px 3px rgba(0,0,0,0.8)' } : {};
+
+  const setsWonByTeamA = score.sets?.filter(s => s.teamA > s.teamB).length || 0;
+  const setsWonByTeamB = score.sets?.filter(s => s.teamB > s.teamA).length || 0;
+
+  const teamData = [
+    { name: teams.teamA, score: score.teamA, setsWon: setsWonByTeamA, allSetScores: score.sets?.map(s => s.teamA) || [], key: 'teamA' as const },
+    { name: teams.teamB, score: score.teamB, setsWon: setsWonByTeamB, allSetScores: score.sets?.map(s => s.teamB) || [], key: 'teamB' as const },
+  ];
+
+  const commonCellStyle = cn(
+    "text-center font-bold",
+    compact ? "text-lg md:text-xl p-2" : "text-2xl md:text-4xl p-3"
+  );
   
   return (
       <Card className={cn("w-full", isOverlay ? "shadow-none border-none bg-transparent" : "shadow-lg border bg-card")}>
           <CardContent className={cn("p-0", isOverlay && "bg-card/90 rounded-lg")}>
               <Table>
+                <TableHeader>
+                    <TableRow className="hover:bg-transparent border-b-0">
+                        <TableHead className={cn(
+                          "font-bold text-primary",
+                           compact ? "text-base md:text-lg py-2 px-1 w-[40%]" : "text-xl md:text-2xl py-3 px-2 w-[30%]"
+                        )}>Pareja</TableHead>
+                        {score.sets.map((_, index) => (
+                          <TableHead key={index} className={cn("text-center font-semibold", compact ? "p-2" : "p-3")}>{compact ? `S${index + 1}` : `Set ${index + 1}`}</TableHead>
+                        ))}
+                        <TableHead className={cn("text-center font-semibold", compact ? "p-2" : "p-3")}>Juegos</TableHead>
+                        <TableHead className={cn("text-center font-semibold", compact ? "p-2" : "p-3")}>Puntos</TableHead>
+                        <TableHead className={cn("text-center font-bold text-primary", compact ? "p-2" : "p-3")}>SETS</TableHead>
+                    </TableRow>
+                </TableHeader>
                   <TableBody>
-                      {[
-                          { name: teams.teamA, score: score.teamA, key: 'teamA' as const },
-                          { name: teams.teamB, score: score.teamB, key: 'teamB' as const }
-                          
-                      ].map((team) => (
+                      {teamData.map((team) => (
                           <TableRow key={team.key} className="border-b-0 hover:bg-transparent">
                               <TableCell className={cn(
                                 "font-bold truncate text-primary",
                                 compact ? "text-base md:text-lg py-2 px-1" : "text-xl md:text-2xl py-3 px-2"
                               )} style={{...overlayTextStyle, color: isOverlay ? theme.primaryColor : ''}}>{team.name}</TableCell>
-                              <TableCell className={cn(
-                                "text-center font-bold text-accent",
-                                compact ? "text-lg md:text-xl p-2" : "text-2xl md:text-4xl p-3"
-                              )} style={{...overlayTextStyle, color: isOverlay ? theme.accentColor : ''}}>{pointValues[team.score.points]}</TableCell>
-                              <TableCell className={cn(
-                                "text-center font-bold text-accent",
-                                compact ? "text-lg md:text-xl p-2" : "text-2xl md:text-4xl p-3"
-                              )} style={{...overlayTextStyle, color: isOverlay ? theme.accentColor : ''}}>{team.score.games}</TableCell>
-                              <TableCell className={cn(
-                                "text-center font-bold text-accent",
-                                compact ? "text-lg md:text-xl p-2" : "text-2xl md:text-4xl p-3"
-                              )} style={{...overlayTextStyle, color: isOverlay ? theme.accentColor : ''}}>{team.score.sets}</TableCell>
+                              
+                              {team.allSetScores.map((setScore, index) => (
+                                <TableCell key={index} className={cn(commonCellStyle, "text-accent")} style={{...overlayTextStyle, color: isOverlay ? theme.accentColor : ''}}>{setScore}</TableCell>
+                              ))}
+
+                              <TableCell className={cn(commonCellStyle, "text-accent")} style={{...overlayTextStyle, color: isOverlay ? theme.accentColor : ''}}>{team.score.games}</TableCell>
+                              
+                              <TableCell className={cn(commonCellStyle, "text-accent")} style={{...overlayTextStyle, color: isOverlay ? theme.accentColor : ''}}>{pointValues[team.score.points]}</TableCell>
+                              
+                              <TableCell className={cn(commonCellStyle, "text-primary")} style={{...overlayTextStyle, color: isOverlay ? theme.primaryColor : ''}}>{team.setsWon}</TableCell>
                           </TableRow>
                       ))}
                   </TableBody>

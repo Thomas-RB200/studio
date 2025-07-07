@@ -37,6 +37,11 @@ export interface TimerState {
   };
 }
 
+export interface SetScore {
+  teamA: number;
+  teamB: number;
+}
+
 export interface Scoreboard {
   id: string;
   courtName: string;
@@ -47,8 +52,9 @@ export interface Scoreboard {
     teamB: string;
   };
   score: {
-    teamA: { points: number; games: number; sets: number };
-    teamB: { points: number; games: number; sets: number };
+    teamA: { points: number; games: number; };
+    teamB: { points: number; games: number; };
+    sets: SetScore[]; // array of finished set scores
   };
   timers: TimerState;
 }

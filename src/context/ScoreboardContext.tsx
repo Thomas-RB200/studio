@@ -56,7 +56,7 @@ const scoreboards: Scoreboard[] = Array.from({ length: 10 }, (_, i) => ({
     refereeId: `referee-user-${i + 1}`,
     isActive: true,
     teams: { teamA: `Pareja A${i + 1}`, teamB: `Pareja B${i + 1}` },
-    score: { teamA: { points: 0, games: 0, sets: 0 }, teamB: { points: 0, games: 0, sets: 0 } },
+    score: { teamA: { points: 0, games: 0 }, teamB: { points: 0, games: 0 }, sets: [] },
     timers: defaultTimerState,
 }));
 
@@ -218,15 +218,12 @@ export function ScoreboardProvider({ children }: { children: ReactNode }) {
       if (!scoreboardToUpdate) return prev;
       
       // --- Data Sanitization ---
-      // This prevents errors from malformed data (e.g., from old localStorage)
-      // by ensuring all score parts are numbers, defaulting to 0 if not.
       const s = scoreboardToUpdate.score;
       s.teamA.points = Number(s.teamA.points) || 0;
       s.teamA.games = Number(s.teamA.games) || 0;
-      s.teamA.sets = Number(s.teamA.sets) || 0;
       s.teamB.points = Number(s.teamB.points) || 0;
       s.teamB.games = Number(s.teamB.games) || 0;
-      s.teamB.sets = Number(s.teamB.sets) || 0;
+      if (!s.sets) s.sets = [];
       // --- End Sanitization ---
 
       const score = scoreboardToUpdate.score;
@@ -240,41 +237,45 @@ export function ScoreboardProvider({ children }: { children: ReactNode }) {
         } else { // myPoints is 0, so decrement games
             if (score[team].games > 0) {
                 score[team].games--;
-            } else { // myGames is 0, so decrement sets
-                if (score[team].sets > 0) {
-                    score[team].sets--;
-                }
             }
+            // Cannot decrement further into previous sets for simplicity
         }
-      } else { // Increment
-          const theirPoints = score[opponent].points;
-          if (myPoints === 3) { // 40
-            if (theirPoints <= 2) { // 0, 15, 30
-                score[team].games++;
-                score.teamA.points = 0;
-                score.teamB.points = 0;
-            } else if (theirPoints === 3) { // Deuce
-                score[team].points = 4; // AD
-            } else { // opponent has AD
-                score[opponent].points = 3; // Back to Deuce
-            }
-          } else if (myPoints === 4) { // AD
-            score[team].games++;
-            score.teamA.points = 0;
-            score.teamB.points = 0;
-          } else {
-            score[team].points++;
-          }
+        return newState; // Return early after decrement
+      } 
+      
+      // --- Increment Logic ---
+      const theirPoints = score[opponent].points;
+      
+      let gameWon = false;
+
+      if (myPoints === 3) { // 40
+        if (theirPoints <= 2) { // 0, 15, 30
+            gameWon = true;
+        } else if (theirPoints === 3) { // Deuce
+            score[team].points = 4; // AD
+        } else { // opponent has AD
+            score[opponent].points = 3; // Back to Deuce
+        }
+      } else if (myPoints === 4) { // AD
+        gameWon = true;
+      } else {
+        score[team].points++;
       }
       
-      // Check for set win after game change
-      const myGames = score[team].games;
-      const theirGames = score[opponent].games;
+      if (gameWon) {
+        score[team].games++;
+        score.teamA.points = 0;
+        score.teamB.points = 0;
 
-      if ((myGames >= 6 && myGames - theirGames >= 2) || myGames === 7) {
-          score[team].sets++;
-          score.teamA.games = 0;
-          score.teamB.games = 0;
+        // Check for set win after game change
+        const myGames = score[team].games;
+        const theirGames = score[opponent].games;
+
+        if ((myGames >= 6 && myGames - theirGames >= 2) || myGames === 7) {
+            score.sets.push({ teamA: score.teamA.games, teamB: score.teamB.games });
+            score.teamA.games = 0;
+            score.teamB.games = 0;
+        }
       }
       
       return newState;
@@ -286,7 +287,7 @@ export function ScoreboardProvider({ children }: { children: ReactNode }) {
       const newState = JSON.parse(JSON.stringify(prev)) as GlobalState;
       const scoreboardToUpdate = newState.scoreboards.find(sb => sb.id === scoreboardId);
       if (scoreboardToUpdate) {
-        scoreboardToUpdate.score = { teamA: { points: 0, games: 0, sets: 0 }, teamB: { points: 0, games: 0, sets: 0 } };
+        scoreboardToUpdate.score = { teamA: { points: 0, games: 0 }, teamB: { points: 0, games: 0 }, sets: [] };
         scoreboardToUpdate.timers = { ...defaultTimerState };
       }
       return newState;
