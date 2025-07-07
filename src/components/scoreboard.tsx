@@ -106,21 +106,21 @@ const Scoreboard = ({
   ) => {
     const [player1, player2] = teamName.split(' / ').map(p => p.trim());
     return (
-      <div className="grid grid-cols-subgrid col-span-full items-center bg-background">
+      <div className="grid grid-cols-subgrid col-span-full items-center bg-card">
         <div className="p-3">
           <div className="flex items-center gap-2">
              {isServing && <div className="w-2.5 h-2.5 bg-accent rounded-full" title="Serving"></div>}
-            <span className="font-bold uppercase text-foreground">{player1}</span>
+            <span className="font-bold uppercase text-card-foreground">{player1}</span>
           </div>
-          {player2 && <span className="font-bold uppercase text-foreground ml-5">{player2}</span>}
+          {player2 && <span className="font-bold uppercase text-card-foreground ml-5">{player2}</span>}
         </div>
         {Array.from({ length: setHeaderCount }).map((_, i) => (
-          <div key={`set-${i}`} className="bg-primary h-full flex items-center justify-center border-l border-background/50">
-            <span className="text-4xl font-bold text-primary-foreground">{teamSetScores[i] ?? ''}</span>
+          <div key={`set-${i}`} className="bg-card h-full flex items-center justify-center border-l border-background/50">
+            <span className="text-4xl font-bold text-primary">{teamSetScores[i] ?? ''}</span>
           </div>
         ))}
-        <div className="bg-primary h-full flex items-center justify-center border-l border-background/50">
-          <span className="text-4xl font-bold text-primary-foreground">{teamScore.games}</span>
+        <div className="bg-card h-full flex items-center justify-center border-l border-background/50">
+          <span className="text-4xl font-bold text-card-foreground">{teamScore.games}</span>
         </div>
         <div className="bg-accent text-accent-foreground h-full flex items-center justify-center border-l border-background/50">
           <span className="text-4xl font-bold">{pointValues[teamScore.points]}</span>
