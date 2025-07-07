@@ -1,44 +1,73 @@
 'use client';
 
 import type { Theme, TimerState, Scoreboard as ScoreboardData, SetScore } from '@/lib/types';
-import { Clock } from 'lucide-react';
+import { Clock, Timer as TimerIcon, Dumbbell } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { cn } from "@/lib/utils";
 
-// Timer logic to make it tick on the client.
+// This component handles all timer logic and rendering
 const DynamicTimerDisplay = ({ timers }: { timers: TimerState }) => {
-    const [currentTime, setCurrentTime] = useState(0);
+    const [now, setNow] = useState(0);
 
     useEffect(() => {
         // Set initial time on mount (client-side only)
-        setCurrentTime(Date.now());
+        setNow(Date.now());
 
         const timerId = setInterval(() => {
-            setCurrentTime(Date.now());
+            setNow(Date.now());
         }, 1000);
 
         return () => clearInterval(timerId);
     }, []);
 
-    // On the server or before the first client-side render, show a static time.
-    if (currentTime === 0) {
-        return <span className="text-lg font-mono">00:00</span>;
-    }
-
-    let totalSeconds = timers.accumulatedTime;
-    if (timers.isGameRunning && timers.gameStartTime) {
-        totalSeconds += (currentTime - timers.gameStartTime) / 1000;
-    }
-
+    // Helper to format seconds into HH:MM:SS or MM:SS
     const formatTime = (seconds: number) => {
         if (isNaN(seconds) || seconds < 0) seconds = 0;
-        const minutes = Math.floor(seconds / 60).toString().padStart(2, '0');
-        const secs = Math.floor(seconds % 60).toString().padStart(2, '0');
+        const totalSeconds = Math.floor(seconds);
+        const minutes = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
+        const secs = (totalSeconds % 60).toString().padStart(2, '0');
         return `${minutes}:${secs}`;
     };
 
+    // On the server or before the first client-side render, show a static time.
+    if (now === 0) {
+        return (
+            <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-primary" />
+                <span className="text-lg font-mono">{formatTime(timers.accumulatedTime)}</span>
+                <span className="text-xs uppercase font-semibold text-primary">TIEMPO DE PARTIDO</span>
+            </div>
+        );
+    }
+
+    const isCountdownActive = timers.activeCountdown.type && timers.activeCountdown.endTime && timers.activeCountdown.endTime > now;
+
+    if (isCountdownActive) {
+        const remainingSeconds = (timers.activeCountdown.endTime! - now) / 1000;
+        const Icon = timers.activeCountdown.type === 'serve' ? TimerIcon : Dumbbell;
+        const label = timers.activeCountdown.type === 'serve' ? 'TIEMPO DE SAQUE' : 'CALENTAMIENTO';
+        
+        return (
+            <div className="flex items-center gap-2">
+                <Icon className="w-4 h-4 text-primary animate-pulse" />
+                <span className="text-lg font-mono text-accent">{formatTime(remainingSeconds)}</span>
+                <span className="text-xs uppercase font-semibold text-primary">{label}</span>
+            </div>
+        );
+    }
+
+    // Default: Show main game timer
+    let totalSeconds = timers.accumulatedTime;
+    if (timers.isGameRunning && timers.gameStartTime) {
+        totalSeconds += (now - timers.gameStartTime) / 1000;
+    }
+
     return (
-        <span className="text-lg font-mono">{formatTime(totalSeconds)}</span>
+        <div className="flex items-center gap-2">
+            <Clock className="w-4 h-4 text-primary" />
+            <span className="text-lg font-mono">{formatTime(totalSeconds)}</span>
+            <span className="text-xs uppercase font-semibold text-primary">TIEMPO DE PARTIDO</span>
+        </div>
     );
 };
 
@@ -48,24 +77,23 @@ const Scoreboard = ({
   score,
   pointValues,
   timers,
+  servingTeam,
   isOverlay = false,
 }: {
   teams: { teamA: string; teamB: string };
   score: ScoreboardData['score'];
   pointValues: string[];
   timers: TimerState;
-  theme: Theme;
+  theme: Theme; // Keep theme for potential future use or overlay styling
   isReadOnly?: boolean;
   isOverlay?: boolean;
-  compact?: boolean;
+  servingTeam: 'teamA' | 'teamB' | null;
 }) => {
   
-  const totalGamesPlayed = (score.sets?.reduce((total, set) => total + set.teamA + set.teamB, 0) || 0) + score.teamA.games + score.teamB.games;
-  const isTeamAServing = totalGamesPlayed % 2 === 0;
-
   const teamASets = score.sets?.map(s => s.teamA) || [];
   const teamBSets = score.sets?.map(s => s.teamB) || [];
 
+  // Always show at least 2 set columns, add more if needed
   const setHeaderCount = Math.max(2, score.sets?.length || 0);
   
   const gridTemplateColumns = `2fr repeat(${setHeaderCount + 2}, 1fr)`;
@@ -81,10 +109,10 @@ const Scoreboard = ({
       <div className="grid grid-cols-subgrid col-span-full items-center bg-background">
         <div className="p-3">
           <div className="flex items-center gap-2">
+             {isServing && <div className="w-2.5 h-2.5 bg-accent rounded-full" title="Serving"></div>}
             <span className="font-bold uppercase text-foreground">{player1}</span>
-            {isServing && <div className="w-2.5 h-2.5 bg-accent rounded-full" title="Serving"></div>}
           </div>
-          {player2 && <span className="font-bold uppercase text-foreground">{player2}</span>}
+          {player2 && <span className="font-bold uppercase text-foreground ml-5">{player2}</span>}
         </div>
         {Array.from({ length: setHeaderCount }).map((_, i) => (
           <div key={`set-${i}`} className="bg-primary h-full flex items-center justify-center border-l border-background/50">
@@ -104,7 +132,7 @@ const Scoreboard = ({
   return (
     <div className={cn(
       "font-sans text-foreground w-full max-w-4xl mx-auto",
-      isOverlay ? "bg-transparent" : "bg-background/50 p-2 sm:p-4 rounded-lg"
+      isOverlay ? "bg-transparent" : "bg-card/80 p-2 sm:p-4 rounded-lg border border-border"
     )}>
 
       <div className="flex justify-between items-center mb-2 px-2 text-xs sm:text-sm">
@@ -120,15 +148,12 @@ const Scoreboard = ({
         <div className="p-2 text-center text-xs font-semibold text-foreground/80 uppercase">Juegos</div>
         <div className="p-2 text-center text-xs font-semibold text-foreground/80 uppercase">Puntos</div>
         
-        {renderTeamRow(teams.teamA, score.teamA, teamASets, isTeamAServing)}
-        {renderTeamRow(teams.teamB, score.teamB, teamBSets, !isTeamAServing)}
+        {renderTeamRow(teams.teamA, score.teamA, teamASets, servingTeam === 'teamA')}
+        {renderTeamRow(teams.teamB, score.teamB, teamBSets, servingTeam === 'teamB')}
       </div>
 
        <div className="flex justify-between items-center mt-2 px-2">
-         <div className="flex items-center gap-2">
-            <DynamicTimerDisplay timers={timers} />
-            <span className="text-xs uppercase font-semibold text-primary">TIEMPO DE PARTIDO</span>
-         </div>
+         <DynamicTimerDisplay timers={timers} />
        </div>
     </div>
   );

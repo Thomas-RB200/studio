@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useScoreboard } from '@/context/ScoreboardContext';
 import Scoreboard from '@/components/scoreboard';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Play, Pause, Timer, Dumbbell, Plus, Minus, RotateCcw } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Play, Pause, Timer, Dumbbell, Plus, Minus, RotateCcw, Target } from 'lucide-react';
 import type { Scoreboard as ScoreboardType, UserRole } from '@/lib/types';
 import DashboardLayout from '@/components/dashboard-layout';
 import ThemeCustomizer from '@/components/theme-customizer';
@@ -27,7 +27,7 @@ import ErrorBoundary from '@/components/error-boundary';
 const REFEREE_ROLES: UserRole[] = ['Referee'];
 
 const RefereeControls = ({ scoreboard }: { scoreboard: ScoreboardType }) => {
-    const { handleScoreChange, handleGameTimer, startServeTimer, startWarmupTimer, pointValues, theme, ads, resetScore } = useScoreboard();
+    const { handleScoreChange, handleGameTimer, startServeTimer, startWarmupTimer, pointValues, theme, ads, resetScore, setServingTeam } = useScoreboard();
     if (!scoreboard) return null;
 
     return (
@@ -38,11 +38,10 @@ const RefereeControls = ({ scoreboard }: { scoreboard: ScoreboardType }) => {
                     teams={scoreboard.teams}
                     score={scoreboard.score}
                     pointValues={pointValues}
-                    theme={theme}
-                    ads={ads}
                     timers={scoreboard.timers}
+                    theme={theme}
                     isReadOnly={true}
-                    showAds={false}
+                    servingTeam={scoreboard.servingTeam}
                 />
             </div>
 
@@ -50,49 +49,74 @@ const RefereeControls = ({ scoreboard }: { scoreboard: ScoreboardType }) => {
                 <CardHeader>
                     <CardTitle>Controles del Partido</CardTitle>
                 </CardHeader>
-                <CardContent className="flex flex-col md:flex-row justify-around items-center gap-6">
-                    <div className="flex items-center gap-4">
-                        <span className="font-semibold w-24 truncate text-right">{scoreboard.teams.teamA}</span>
-                        <Button variant="outline" size="icon" onClick={() => handleScoreChange(scoreboard.id, 'teamA', 1)}><Plus /></Button>
-                        <Button variant="outline" size="icon" onClick={() => handleScoreChange(scoreboard.id, 'teamA', -1)}><Minus /></Button>
+                <CardContent className="grid grid-cols-3 items-start gap-4">
+                    {/* Team A Controls */}
+                    <div className="flex flex-col items-center gap-2">
+                         <span className="font-semibold text-lg truncate">{scoreboard.teams.teamA}</span>
+                         <div className="flex items-center gap-4">
+                            <Button variant="outline" size="lg" onClick={() => handleScoreChange(scoreboard.id, 'teamA', 1)}><Plus /></Button>
+                            <Button variant="outline" size="lg" onClick={() => handleScoreChange(scoreboard.id, 'teamA', -1)}><Minus /></Button>
+                        </div>
                     </div>
                     
-                    <div className="flex flex-wrap justify-center items-center gap-2 border-y-2 md:border-y-0 md:border-x-2 py-4 md:py-0 md:px-6">
-                        <Button onClick={() => handleGameTimer(scoreboard.id)} variant="outline" title={scoreboard.timers.isGameRunning ? "Pausar Juego" : "Iniciar Juego"}>
-                            {scoreboard.timers.isGameRunning ? <Pause className="mr-2 h-4 w-4" /> : <Play className="mr-2 h-4 w-4" />}
-                            {scoreboard.timers.isGameRunning ? "Pausar" : "Iniciar"}
-                        </Button>
-                        <Button onClick={() => startServeTimer(scoreboard.id)} variant="outline" title="Tiempo de Saque">
-                            <Timer className="mr-2 h-4 w-4" /> Saque
-                        </Button>
-                        <Button onClick={() => startWarmupTimer(scoreboard.id)} variant="outline" title="Tiempo de Calentamiento">
-                            <Dumbbell className="mr-2 h-4 w-4" /> Calent.
-                        </Button>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button variant="destructive" title="Reiniciar Marcador">
-                                <RotateCcw className="mr-2 h-4 w-4" /> Reiniciar
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Esta acción reiniciará los puntos, juegos, sets y todos los cronómetros para esta cancha. Esta acción no se puede deshacer.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => resetScore(scoreboard.id)}>Continuar</AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                    {/* Center Controls */}
+                    <div className="flex flex-col justify-center items-center gap-4 border-x-2 h-full py-4">
+                        <div className="flex gap-2">
+                          <Button onClick={() => handleGameTimer(scoreboard.id)} variant="outline" title={scoreboard.timers.isGameRunning ? "Pausar Juego" : "Iniciar Juego"}>
+                              {scoreboard.timers.isGameRunning ? <Pause className="mr-2 h-4 w-4" /> : <Play className="mr-2 h-4 w-4" />}
+                              {scoreboard.timers.isGameRunning ? "Pausar" : "Iniciar"}
+                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="destructive" title="Reiniciar Marcador">
+                                  <RotateCcw className="mr-2 h-4 w-4" /> Reiniciar
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Esta acción reiniciará los puntos, juegos, sets y todos los cronómetros para esta cancha. Esta acción no se puede deshacer.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => resetScore(scoreboard.id)}>Continuar</AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+
+                        <div className="flex gap-2">
+                           <Button onClick={() => startServeTimer(scoreboard.id)} variant="outline" title="Tiempo de Saque">
+                              <Timer className="mr-2 h-4 w-4" /> Saque
+                          </Button>
+                          <Button onClick={() => startWarmupTimer(scoreboard.id)} variant="outline" title="Tiempo de Calentamiento">
+                              <Dumbbell className="mr-2 h-4 w-4" /> Calent.
+                          </Button>
+                        </div>
+
+                        <div className="flex flex-col items-center gap-2 pt-4">
+                            <p className="text-sm font-medium text-muted-foreground">Control de Saque</p>
+                            <div className="flex gap-2">
+                                <Button variant={scoreboard.servingTeam === 'teamA' ? 'default' : 'outline'} onClick={() => setServingTeam(scoreboard.id, 'teamA')} size="sm">
+                                    <Target className="mr-2 h-4 w-4" /> {scoreboard.teams.teamA.split('/')[0].trim()}
+                                </Button>
+                                <Button variant={scoreboard.servingTeam === 'teamB' ? 'default' : 'outline'} onClick={() => setServingTeam(scoreboard.id, 'teamB')} size="sm">
+                                    <Target className="mr-2 h-4 w-4" /> {scoreboard.teams.teamB.split('/')[0].trim()}
+                                </Button>
+                            </div>
+                        </div>
+
                     </div>
                     
-                    <div className="flex items-center gap-4">
-                        <Button variant="outline" size="icon" onClick={() => handleScoreChange(scoreboard.id, 'teamB', 1)}><Plus /></Button>
-                        <Button variant="outline" size="icon" onClick={() => handleScoreChange(scoreboard.id, 'teamB', -1)}><Minus /></Button>
-                        <span className="font-semibold w-24 truncate text-left">{scoreboard.teams.teamB}</span>
+                    {/* Team B Controls */}
+                    <div className="flex flex-col items-center gap-2">
+                         <span className="font-semibold text-lg truncate">{scoreboard.teams.teamB}</span>
+                         <div className="flex items-center gap-4">
+                            <Button variant="outline" size="lg" onClick={() => handleScoreChange(scoreboard.id, 'teamB', 1)}><Plus /></Button>
+                            <Button variant="outline" size="lg" onClick={() => handleScoreChange(scoreboard.id, 'teamB', -1)}><Minus /></Button>
+                        </div>
                     </div>
                 </CardContent>
             </Card>

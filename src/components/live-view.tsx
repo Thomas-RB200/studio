@@ -56,10 +56,9 @@ export default function LiveView() {
                               score={sb.score}
                               pointValues={pointValues}
                               theme={theme}
-                              ads={ads}
                               timers={sb.timers}
+                              servingTeam={sb.servingTeam}
                               isReadOnly={true}
-                              showAds={false} // No individual ads in admin live view
                             />
                         </div>
                     ))}
