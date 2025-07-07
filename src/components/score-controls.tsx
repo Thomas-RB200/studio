@@ -1,32 +1,51 @@
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dumbbell, Minus, Play, Plus, RefreshCw, Timer } from "lucide-react";
 
 type ScoreControlsProps = {
     team1Name: string;
     team2Name: string;
     onAddPoint?: (teamIndex: 1 | 2) => void;
+    onSubtractPoint?: (teamIndex: 1 | 2) => void;
     disabled?: boolean;
 }
 
-export default function ScoreControls({ team1Name, team2Name, onAddPoint, disabled }: ScoreControlsProps) {
+export default function ScoreControls({ team1Name, team2Name, onAddPoint, onSubtractPoint, disabled }: ScoreControlsProps) {
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Button 
-                className="h-24 text-xl bg-primary/20 text-primary-foreground hover:bg-primary/30 border-2 border-primary/50" 
-                onClick={() => onAddPoint?.(1)}
-                disabled={disabled}
-            >
-                <Plus className="mr-4 h-8 w-8" />
-                Point to <br /> {team1Name}
-            </Button>
-            <Button 
-                className="h-24 text-xl bg-accent/20 text-accent-foreground/80 hover:bg-accent/30 border-2 border-accent/50 text-black" 
-                onClick={() => onAddPoint?.(2)}
-                disabled={disabled}
-            >
-                <Plus className="mr-4 h-8 w-8" />
-                Point to <br /> {team2Name}
-            </Button>
-        </div>
+        <Card>
+            <CardHeader>
+                <CardTitle>Controles del Partido</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 text-center">
+                    <div className="flex items-center justify-center gap-2">
+                        <span className="font-semibold truncate flex-1 text-right">{team1Name}</span>
+                        <Button size="icon" variant="outline" className="w-10 h-10" onClick={() => onAddPoint?.(1)} disabled={disabled}>
+                            <Plus className="h-5 w-5" />
+                        </Button>
+                        <Button size="icon" variant="outline" className="w-10 h-10" onClick={() => onSubtractPoint?.(1)} disabled={disabled}>
+                            <Minus className="h-5 w-5" />
+                        </Button>
+                    </div>
+
+                    <div className="flex flex-col gap-2 border-x px-4">
+                        <Button variant="outline" className="justify-start"><Play className="mr-2 h-4 w-4" /> Iniciar</Button>
+                        <Button variant="outline" className="justify-start"><Timer className="mr-2 h-4 w-4" /> Saque</Button>
+                        <Button variant="outline" className="justify-start"><Dumbbell className="mr-2 h-4 w-4" /> Calent.</Button>
+                        <Button variant="destructive" className="justify-start ring-1 ring-inset ring-transparent hover:ring-ring focus:ring-ring"><RefreshCw className="mr-2 h-4 w-4" /> Reiniciar</Button>
+                    </div>
+
+                     <div className="flex items-center justify-center gap-2">
+                        <Button size="icon" variant="outline" className="w-10 h-10" onClick={() => onAddPoint?.(2)} disabled={disabled}>
+                            <Plus className="h-5 w-5" />
+                        </Button>
+                        <Button size="icon" variant="outline" className="w-10 h-10" onClick={() => onSubtractPoint?.(2)} disabled={disabled}>
+                            <Minus className="h-5 w-5" />
+                        </Button>
+                        <span className="font-semibold truncate flex-1 text-left">{team2Name}</span>
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
     )
 }

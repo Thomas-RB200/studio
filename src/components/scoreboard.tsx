@@ -1,6 +1,7 @@
-import { Swords, Trophy } from "lucide-react";
+import { Swords, Trophy, Clock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { Separator } from "./ui/separator";
 
 type TeamState = {
   name: string;
@@ -14,35 +15,50 @@ export type GameState = {
   team1: TeamState;
   team2: TeamState;
   isDeuce?: boolean;
-  isOverlay?: boolean;
 };
 
-export function Scoreboard({ courtName, team1, team2, isDeuce, isOverlay = false }: GameState) {
-  const PlayerRow = ({ name, sets, isServing }: { name: string, sets: number, isServing?: boolean }) => (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-2">
-        {isServing && <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />}
-        <span className="text-lg md:text-xl font-semibold truncate">{name}</span>
-      </div>
-      <div className="flex items-center gap-2">
-        {Array.from({ length: team1.sets > team2.sets ? team1.sets : team2.sets > 0 ? team2.sets : 1 }).map((_, i) => (
-            <Trophy key={i} className={cn("w-5 h-5", sets > i ? 'text-primary' : 'text-muted-foreground/30')} />
-        ))}
-      </div>
-    </div>
-  );
+export type ScoreboardProps = GameState & {
+  isOverlay?: boolean;
+  isScoringPage?: boolean;
+};
 
-  const ScoreDisplay = ({ points, games }: { points: string, games: number }) => (
-    <div className="flex items-center justify-end gap-4 text-right">
-      <span className="text-3xl md:text-4xl font-bold w-16">{games}</span>
-      <span className={cn(
-          "text-4xl md:text-5xl font-bold w-24",
-          points === 'ADV' ? 'text-accent' : 'text-primary'
-      )}>
-        {points}
-      </span>
-    </div>
-  );
+
+export function Scoreboard({ courtName, team1, team2, isDeuce, isOverlay = false, isScoringPage = false }: ScoreboardProps) {
+  
+  if (isScoringPage) {
+    const TeamRow = ({ name, sets, games, points }: TeamState) => (
+      <div className="flex justify-between items-center py-2">
+        <p className="text-lg text-muted-foreground truncate w-1/2">{name}</p>
+        <div className="flex gap-4 md:gap-8 items-center font-bold text-2xl">
+          <span className="text-primary w-8 text-center">{sets}</span>
+          <span className="text-primary w-8 text-center">{games}</span>
+          <span className="text-primary w-8 text-center">{points}</span>
+        </div>
+      </div>
+    );
+
+    return (
+      <Card>
+        <CardContent className="p-4 space-y-1">
+           <div className="flex justify-end pr-[6px]">
+             <div className="flex gap-4 md:gap-8 items-center font-semibold text-xs text-muted-foreground">
+                <span className="w-8 text-center">SETS</span>
+                <span className="w-8 text-center">JUEGOS</span>
+                <span className="w-8 text-center">PUNTOS</span>
+             </div>
+          </div>
+          <TeamRow {...team1} />
+          <Separator />
+          <TeamRow {...team2} />
+          <Separator />
+          <div className="flex items-center gap-2 text-muted-foreground pt-2">
+            <Clock className="w-5 h-5" />
+            <span>00:00</span>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (isOverlay) {
     return (
