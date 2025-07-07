@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Whistle, PlusCircle } from "lucide-react";
+import { Gavel, PlusCircle } from "lucide-react";
 import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
 import {
@@ -48,7 +48,7 @@ export default function DashboardPage() {
               <CardFooter>
                 <Button asChild className="w-full">
                   <Link href={`/score/${court.id}`}>
-                    <Whistle className="mr-2 h-4 w-4" />
+                    <Gavel className="mr-2 h-4 w-4" />
                     Manage Game
                   </Link>
                 </Button>
