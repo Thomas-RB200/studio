@@ -20,6 +20,7 @@ interface ScoreboardContextType extends GlobalState {
   startServeTimer: (scoreboardId: string) => void;
   startWarmupTimer: (scoreboardId: string) => void;
   addScoreboard: (newScoreboard: Omit<Scoreboard, 'id'>) => void;
+  setServingTeam: (scoreboardId: string, team: 'teamA' | 'teamB') => void;
 }
 
 const ScoreboardContext = createContext<ScoreboardContextType | undefined>(undefined);
@@ -58,6 +59,7 @@ const scoreboards: Scoreboard[] = Array.from({ length: 10 }, (_, i) => ({
     teams: { teamA: `Antonio Luque / Miguel Oliveira`, teamB: `Miguel Yanguas / Aris Patiniotis` },
     score: { teamA: { points: 0, games: 0 }, teamB: { points: 0, games: 0 }, sets: [] },
     timers: defaultTimerState,
+    servingTeam: 'teamA',
 }));
 
 
@@ -201,12 +203,24 @@ export function ScoreboardProvider({ children }: { children: ReactNode }) {
           const newScoreboard: Scoreboard = {
               id: `court-${Date.now()}`,
               ...newScoreboardData,
+              servingTeam: 'teamA',
           };
           return {
               ...prev,
               scoreboards: [...prev.scoreboards, newScoreboard],
           };
       });
+  }, [updateStateAndStorage]);
+
+  const setServingTeam = useCallback((scoreboardId: string, team: 'teamA' | 'teamB') => {
+    updateStateAndStorage(prev => {
+        const newState = JSON.parse(JSON.stringify(prev)) as GlobalState;
+        const scoreboardToUpdate = newState.scoreboards.find(sb => sb.id === scoreboardId);
+        if (scoreboardToUpdate) {
+            scoreboardToUpdate.servingTeam = team;
+        }
+        return newState;
+    });
   }, [updateStateAndStorage]);
 
   const handleScoreChange = useCallback((scoreboardId: string, team: 'teamA' | 'teamB', change: 1 | -1) => {
@@ -278,6 +292,7 @@ export function ScoreboardProvider({ children }: { children: ReactNode }) {
       if (scoreboardToUpdate) {
         scoreboardToUpdate.score = { teamA: { points: 0, games: 0 }, teamB: { points: 0, games: 0 }, sets: [] };
         scoreboardToUpdate.timers = { ...defaultTimerState };
+        scoreboardToUpdate.servingTeam = 'teamA';
       }
       return newState;
     });
@@ -351,6 +366,7 @@ export function ScoreboardProvider({ children }: { children: ReactNode }) {
     startServeTimer,
     startWarmupTimer,
     addScoreboard,
+    setServingTeam,
   };
 
   return (
