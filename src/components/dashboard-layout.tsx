@@ -13,12 +13,13 @@ import {
   SidebarInset,
   SidebarFooter,
 } from '@/components/ui/sidebar';
-import { Tally4, Palette, Megaphone, Users, Tv, ExternalLink, LogOut, Link2 } from 'lucide-react';
+import { Palette, Megaphone, Users, Tv, ExternalLink, LogOut, Link2 } from 'lucide-react';
 import { useScoreboard } from '@/context/ScoreboardContext';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect } from 'react';
 import { ERROR_STORAGE_KEY, type AppErrorEvent } from '@/lib/error-reporting';
 import type { UserRole } from '@/lib/types';
+import { PadelIcon } from '@/components/icons';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -68,7 +69,7 @@ export default function DashboardLayout({ children, activeView, setActiveView }:
       <Sidebar>
         <SidebarHeader>
           <div className="flex items-center gap-2 p-2">
-            <Tally4 className="w-8 h-8 text-primary" />
+            <PadelIcon className="w-8 h-8 text-primary" />
             <h1 className="text-xl font-bold">Padelicius Score</h1>
           </div>
         </SidebarHeader>
