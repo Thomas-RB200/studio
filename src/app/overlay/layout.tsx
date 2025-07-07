@@ -1,19 +1,17 @@
 import type { Metadata } from "next";
-import { Toaster } from "@/components/ui/toaster";
-import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Padelicius Score",
-  description: "Live padel scoring and broadcasting.",
+  title: "Padelicius Score Overlay",
+  description: "Live padel scoring overlay for broadcasts.",
 };
 
-export default function RootLayout({
+export default function OverlayLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full">
+    <html lang="en">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -22,9 +20,8 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="font-body antialiased h-full">
+      <body className="font-body antialiased bg-transparent">
         {children}
-        <Toaster />
       </body>
     </html>
   );
