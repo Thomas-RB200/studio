@@ -104,15 +104,11 @@ const Scoreboard = ({
     teamSetScores: number[], 
     isServing: boolean
   ) => {
-    const [player1, player2] = teamName.split(' / ').map(p => p.trim());
     return (
       <div className="grid grid-cols-subgrid col-span-full items-center bg-card">
-        <div className="p-3">
-          <div className="flex items-center gap-2">
-             {isServing && <div className="w-2.5 h-2.5 bg-accent rounded-full" title="Serving"></div>}
-            <span className="font-bold uppercase text-card-foreground">{player1}</span>
-          </div>
-          {player2 && <span className="font-bold uppercase text-card-foreground ml-5">{player2}</span>}
+        <div className="p-3 flex items-center gap-2">
+          {isServing && <div className="w-2.5 h-2.5 bg-accent rounded-full" title="Serving"></div>}
+          <span className="font-bold uppercase text-card-foreground whitespace-nowrap">{teamName}</span>
         </div>
         {Array.from({ length: setHeaderCount }).map((_, i) => (
           <div key={`set-${i}`} className="bg-card h-full flex items-center justify-center border-l border-background/50">
