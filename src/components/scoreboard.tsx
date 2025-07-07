@@ -96,11 +96,8 @@ const Scoreboard = ({
   
   const teamASets = score.sets?.map(s => s.teamA) || [];
   const teamBSets = score.sets?.map(s => s.teamB) || [];
-
-  // Always show at least 2 set columns, add more if needed
-  const setHeaderCount = Math.max(2, score.sets?.length || 0);
   
-  const gridTemplateColumns = `2fr repeat(${setHeaderCount + 2}, 1fr)`;
+  const gridTemplateColumns = "2fr repeat(5, 1fr)";
 
   const renderTeamRow = (
     teamName: string, 
@@ -114,14 +111,21 @@ const Scoreboard = ({
           {isServing && <div className="w-2.5 h-2.5 bg-accent rounded-full" title="Serving"></div>}
           <span className="font-bold uppercase text-card-foreground whitespace-nowrap">{teamName}</span>
         </div>
-        {Array.from({ length: setHeaderCount }).map((_, i) => (
-          <div key={`set-${i}`} className="bg-card h-full flex items-center justify-center border-l border-background/50">
-            <span className="text-4xl font-bold text-primary">{teamSetScores[i] ?? ''}</span>
-          </div>
-        ))}
+        {/* Set Columns */}
+        <div className="bg-card h-full flex items-center justify-center border-l border-background/50">
+            <span className="text-4xl font-bold text-primary">{teamSetScores[0] ?? ''}</span>
+        </div>
+        <div className="bg-card h-full flex items-center justify-center border-l border-background/50">
+            <span className="text-4xl font-bold text-primary">{teamSetScores[1] ?? ''}</span>
+        </div>
+        <div className="bg-card h-full flex items-center justify-center border-l border-background/50">
+            <span className="text-4xl font-bold text-primary">{teamSetScores[2] ?? ''}</span>
+        </div>
+        {/* Games Column */}
         <div className="bg-card h-full flex items-center justify-center border-l border-background/50">
           <span className="text-4xl font-bold text-card-foreground">{teamScore.games}</span>
         </div>
+        {/* Points Column */}
         <div className="bg-accent text-accent-foreground h-full flex items-center justify-center border-l border-background/50">
           <span className="text-4xl font-bold">{pointValues[teamScore.points]}</span>
         </div>
@@ -141,13 +145,15 @@ const Scoreboard = ({
       </div>
       
       <div className="bg-foreground/20 p-px grid gap-px" style={{ gridTemplateColumns }}>
+        {/* Headers */}
         <div className="p-2 text-xs font-semibold text-foreground/80 uppercase">Pareja</div>
-        {Array.from({ length: setHeaderCount }).map((_, i) => (
-          <div key={`header-set-${i}`} className="p-2 text-center text-xs font-semibold text-foreground/80 uppercase">SET {i + 1}</div>
-        ))}
+        <div className="p-2 text-center text-xs font-semibold text-foreground/80 uppercase">SET 1</div>
+        <div className="p-2 text-center text-xs font-semibold text-foreground/80 uppercase">SET 2</div>
+        <div className="p-2 text-center text-xs font-semibold text-foreground/80 uppercase">SET 3</div>
         <div className="p-2 text-center text-xs font-semibold text-foreground/80 uppercase">Juegos</div>
         <div className="p-2 text-center text-xs font-semibold text-foreground/80 uppercase">Puntos</div>
         
+        {/* Team Rows */}
         {renderTeamRow(teams.teamA, score.teamA, teamASets, servingTeam === 'teamA')}
         {renderTeamRow(teams.teamB, score.teamB, teamBSets, servingTeam === 'teamB')}
       </div>

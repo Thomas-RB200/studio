@@ -233,11 +233,19 @@ export function ScoreboardProvider({ children }: { children: ReactNode }) {
       if (!scoreboardToUpdate) return prev;
       
       const s = scoreboardToUpdate.score;
+      // Ensure scores are numbers
       s.teamA.points = Number(s.teamA.points) || 0;
       s.teamA.games = Number(s.teamA.games) || 0;
       s.teamB.points = Number(s.teamB.points) || 0;
       s.teamB.games = Number(s.teamB.games) || 0;
       if (!s.sets) s.sets = [];
+
+      // Check if match is over (best of 3 sets)
+      const setsWonA = s.sets.filter(set => set.teamA > set.teamB).length;
+      const setsWonB = s.sets.filter(set => set.teamB > set.teamA).length;
+      if (setsWonA === 2 || setsWonB === 2) {
+          return newState; // Match is over, no more scoring
+      }
 
       const score = scoreboardToUpdate.score;
       const opponent = team === 'teamA' ? 'teamB' : 'teamA';
@@ -276,7 +284,7 @@ export function ScoreboardProvider({ children }: { children: ReactNode }) {
         
         const isSetWon = (myGames >= 6 && myGames - theirGames >= 2) || myGames === 7;
 
-        if (isSetWon) {
+        if (isSetWon && score.sets.length < 3) {
             score.sets.push({ teamA: score.teamA.games, teamB: score.teamB.games });
             score.teamA.games = 0;
             score.teamB.games = 0;
