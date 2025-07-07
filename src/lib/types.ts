@@ -45,6 +45,8 @@ export interface SetScore {
 export interface Scoreboard {
   id: string;
   courtName: string;
+  tournamentName?: string;
+  matchName?: string;
   refereeId: string | null;
   isActive: boolean;
   teams: {

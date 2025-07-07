@@ -54,6 +54,8 @@ const referees: User[] = Array.from({ length: 10 }, (_, i) => ({
 const scoreboards: Scoreboard[] = Array.from({ length: 10 }, (_, i) => ({
     id: `court-${i + 1}`,
     courtName: `Cancha ${i + 1}`,
+    tournamentName: 'World Padel Tour',
+    matchName: 'Victoria',
     refereeId: `referee-user-${i + 1}`,
     isActive: true,
     teams: { teamA: `Antonio Luque / Miguel Oliveira`, teamB: `Miguel Yanguas / Aris Patiniotis` },

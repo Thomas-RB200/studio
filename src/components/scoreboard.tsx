@@ -78,6 +78,8 @@ const Scoreboard = ({
   pointValues,
   timers,
   servingTeam,
+  tournamentName,
+  matchName,
   isOverlay = false,
 }: {
   teams: { teamA: string; teamB: string };
@@ -88,6 +90,8 @@ const Scoreboard = ({
   isReadOnly?: boolean;
   isOverlay?: boolean;
   servingTeam: 'teamA' | 'teamB' | null;
+  tournamentName?: string;
+  matchName?: string;
 }) => {
   
   const teamASets = score.sets?.map(s => s.teamA) || [];
@@ -132,8 +136,8 @@ const Scoreboard = ({
     )}>
 
       <div className="flex justify-between items-center mb-2 px-2 text-xs sm:text-sm">
-        <p className="font-bold uppercase">World Padel Tour</p>
-        <p className="font-bold uppercase">Victoria</p>
+        <p className="font-bold uppercase">{tournamentName || 'World Padel Tour'}</p>
+        <p className="font-bold uppercase">{matchName || 'Victoria'}</p>
       </div>
       
       <div className="bg-foreground/20 p-px grid gap-px" style={{ gridTemplateColumns }}>

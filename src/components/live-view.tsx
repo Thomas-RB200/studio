@@ -59,6 +59,8 @@ export default function LiveView() {
                               timers={sb.timers}
                               servingTeam={sb.servingTeam}
                               isReadOnly={true}
+                              tournamentName={sb.tournamentName}
+                              matchName={sb.matchName}
                             />
                         </div>
                     ))}

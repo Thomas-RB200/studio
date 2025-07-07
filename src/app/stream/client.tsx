@@ -123,7 +123,9 @@ function StreamView() {
                       theme={theme}
                       isReadOnly={true}
                       isOverlay={isOverlay}
-                      compact={false}
+                      servingTeam={sb.servingTeam}
+                      tournamentName={sb.tournamentName}
+                      matchName={sb.matchName}
                     />
                   </div>
                 ))}
@@ -146,7 +148,9 @@ function StreamView() {
                     theme={theme}
                     isReadOnly={true}
                     isOverlay={isOverlay}
-                    compact={true}
+                    servingTeam={sb.servingTeam}
+                    tournamentName={sb.tournamentName}
+                    matchName={sb.matchName}
                   />
                 </div>
               ))}

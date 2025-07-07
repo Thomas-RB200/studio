@@ -55,6 +55,8 @@ const UserManagerComponent = ({ users, setUsers }: UserManagerProps) => {
     const [isDialogOpen, setDialogOpen] = useState(false);
     const [currentUserForm, setCurrentUserForm] = useState<Partial<User>>({});
     const [courtName, setCourtName] = useState('');
+    const [courtTournamentName, setCourtTournamentName] = useState('');
+    const [courtMatchName, setCourtMatchName] = useState('');
     const { scoreboards, addScoreboard, updateScoreboard, currentUser: loggedInUser } = useScoreboard();
 
     const visibleUsers = useMemo(() => {
@@ -103,8 +105,12 @@ const UserManagerComponent = ({ users, setUsers }: UserManagerProps) => {
         if (currentUserForm.role && COURT_ASSIGNABLE_ROLES.includes(currentUserForm.role) && currentUserForm.id) {
             const sb = scoreboards.find(s => s.refereeId === currentUserForm.id);
             setCourtName(sb?.courtName || '');
+            setCourtTournamentName(sb?.tournamentName || '');
+            setCourtMatchName(sb?.matchName || '');
         } else {
             setCourtName('');
+            setCourtTournamentName('');
+            setCourtMatchName('');
         }
     }, [currentUserForm, scoreboards]);
 
@@ -135,12 +141,11 @@ const UserManagerComponent = ({ users, setUsers }: UserManagerProps) => {
                 if (existingSb) {
                     // User is still a referee, check for updates to their scoreboard
                     const scoreboardUpdates: Partial<Scoreboard> = {};
-                    if (courtName && existingSb.courtName !== courtName) {
-                        scoreboardUpdates.courtName = courtName;
-                    }
-                    if (existingSb.isActive !== (updatedUser.status === 'Active')) {
-                        scoreboardUpdates.isActive = updatedUser.status === 'Active';
-                    }
+                    if (courtName && existingSb.courtName !== courtName) scoreboardUpdates.courtName = courtName;
+                    if (courtTournamentName !== existingSb.tournamentName) scoreboardUpdates.tournamentName = courtTournamentName;
+                    if (courtMatchName !== existingSb.matchName) scoreboardUpdates.matchName = courtMatchName;
+                    if (existingSb.isActive !== (updatedUser.status === 'Active')) scoreboardUpdates.isActive = updatedUser.status === 'Active';
+
                     if (Object.keys(scoreboardUpdates).length > 0) {
                         updateScoreboard(existingSb.id, scoreboardUpdates);
                     }
@@ -148,11 +153,14 @@ const UserManagerComponent = ({ users, setUsers }: UserManagerProps) => {
                     // User was just made a referee, create a scoreboard for them
                      addScoreboard({
                         courtName: courtName || `Cancha de ${updatedUser.name}`,
+                        tournamentName: courtTournamentName || 'World Padel Tour',
+                        matchName: courtMatchName || 'Victoria',
                         refereeId: updatedUser.id,
                         isActive: updatedUser.status === 'Active',
                         teams: { teamA: 'Pareja A', teamB: 'Pareja B' },
-                        score: { teamA: { points: 0, games: 0, sets: 0 }, teamB: { points: 0, games: 0, sets: 0 } },
+                        score: { teamA: { points: 0, games: 0 }, teamB: { points: 0, games: 0 }, sets: [] },
                         timers: defaultTimerState,
+                        servingTeam: 'teamA',
                     });
                 }
             } else if (wasReferee && existingSb) {
@@ -184,12 +192,17 @@ const UserManagerComponent = ({ users, setUsers }: UserManagerProps) => {
             } as User;
 
             if (newUser.role && COURT_ASSIGNABLE_ROLES.includes(newUser.role)) {
-                const newCourtName = `Cancha de ${newUser.name}`;
+                const newCourtName = courtName || `Cancha de ${newUser.name}`;
                 addScoreboard({
-                    courtName: newCourtName, refereeId: newId, isActive: newUser.status === 'Active',
+                    courtName: newCourtName,
+                    tournamentName: courtTournamentName || 'World Padel Tour',
+                    matchName: courtMatchName || 'Victoria',
+                    refereeId: newId, 
+                    isActive: newUser.status === 'Active',
                     teams: { teamA: 'Pareja A', teamB: 'Pareja B' },
-                    score: { teamA: { points: 0, games: 0, sets: 0 }, teamB: { points: 0, games: 0, sets: 0 } },
+                    score: { teamA: { points: 0, games: 0 }, teamB: { points: 0, games: 0 }, sets: [] },
                     timers: defaultTimerState,
+                    servingTeam: 'teamA',
                 });
             }
             setUsers([...users, newUser]);
@@ -221,6 +234,8 @@ const UserManagerComponent = ({ users, setUsers }: UserManagerProps) => {
         });
         setCurrentUserForm({role: defaultRole, status: 'Active'});
         setCourtName('');
+        setCourtTournamentName('');
+        setCourtMatchName('');
         setDialogOpen(true);
     }
 
@@ -386,11 +401,21 @@ const UserManagerComponent = ({ users, setUsers }: UserManagerProps) => {
                                 </SelectContent>
                             </Select>
                         </div>
-                        {currentUserForm.id && currentUserForm.role && COURT_ASSIGNABLE_ROLES.includes(currentUserForm.role) && (
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="courtName" className="text-right">Court Name</Label>
-                                <Input id="courtName" value={courtName} onChange={(e) => setCourtName(e.target.value)} className="col-span-3" placeholder="e.g. Cancha Central" />
-                            </div>
+                        {currentUserForm.role && COURT_ASSIGNABLE_ROLES.includes(currentUserForm.role) && (
+                            <>
+                                <div className="grid grid-cols-4 items-center gap-4">
+                                    <Label htmlFor="courtName" className="text-right">Court Name</Label>
+                                    <Input id="courtName" value={courtName} onChange={(e) => setCourtName(e.target.value)} className="col-span-3" placeholder="e.g. Cancha Central" />
+                                </div>
+                                <div className="grid grid-cols-4 items-center gap-4">
+                                    <Label htmlFor="tournamentName" className="text-right">Tournament</Label>
+                                    <Input id="tournamentName" value={courtTournamentName} onChange={(e) => setCourtTournamentName(e.target.value)} className="col-span-3" placeholder="e.g. World Padel Tour" />
+                                </div>
+                                <div className="grid grid-cols-4 items-center gap-4">
+                                    <Label htmlFor="matchName" className="text-right">Match Info</Label>
+                                    <Input id="matchName" value={courtMatchName} onChange={(e) => setCourtMatchName(e.target.value)} className="col-span-3" placeholder="e.g. Final" />
+                                </div>
+                            </>
                         )}
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="status" className="text-right">Status</Label>

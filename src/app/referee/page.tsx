@@ -27,7 +27,7 @@ import ErrorBoundary from '@/components/error-boundary';
 const REFEREE_ROLES: UserRole[] = ['Referee'];
 
 const RefereeControls = ({ scoreboard }: { scoreboard: ScoreboardType }) => {
-    const { handleScoreChange, handleGameTimer, startServeTimer, startWarmupTimer, pointValues, theme, ads, resetScore, setServingTeam } = useScoreboard();
+    const { handleScoreChange, handleGameTimer, startServeTimer, startWarmupTimer, pointValues, theme, resetScore, setServingTeam } = useScoreboard();
     if (!scoreboard) return null;
 
     return (
@@ -42,6 +42,8 @@ const RefereeControls = ({ scoreboard }: { scoreboard: ScoreboardType }) => {
                     theme={theme}
                     isReadOnly={true}
                     servingTeam={scoreboard.servingTeam}
+                    tournamentName={scoreboard.tournamentName}
+                    matchName={scoreboard.matchName}
                 />
             </div>
 
