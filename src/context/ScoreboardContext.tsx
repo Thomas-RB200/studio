@@ -1,6 +1,6 @@
 'use client';
 
-import type { Ad, User, Theme, TimerState, Scoreboard, UserRole, GlobalState } from '@/lib/types';
+import type { Ad, User, Theme, TimerState, Scoreboard, UserRole, GlobalState, SetScore } from '@/lib/types';
 import React, { createContext, useContext, useState, ReactNode, useCallback, useEffect } from 'react';
 
 const pointValues = ['0', '15', '30', '40', 'AD'];
@@ -55,7 +55,7 @@ const scoreboards: Scoreboard[] = Array.from({ length: 10 }, (_, i) => ({
     courtName: `Cancha ${i + 1}`,
     refereeId: `referee-user-${i + 1}`,
     isActive: true,
-    teams: { teamA: `Pareja A${i + 1}`, teamB: `Pareja B${i + 1}` },
+    teams: { teamA: `Antonio Luque / Miguel Oliveira`, teamB: `Miguel Yanguas / Aris Patiniotis` },
     score: { teamA: { points: 0, games: 0 }, teamB: { points: 0, games: 0 }, sets: [] },
     timers: defaultTimerState,
 }));
@@ -64,10 +64,10 @@ const scoreboards: Scoreboard[] = Array.from({ length: 10 }, (_, i) => ({
 const defaultState: GlobalState = {
   theme: {
     scoreboardTitle: 'Padelicius Score',
-    primaryColor: '#00bcd4',
-    backgroundColor: '#e0f7fa',
-    textColor: '#0d1b2a',
-    accentColor: '#00838f',
+    primaryColor: '#e11d48',
+    backgroundColor: '#1e1b4b',
+    textColor: '#f8fafc',
+    accentColor: '#f59e0b',
     backgroundType: 'color',
     backgroundImage: null,
   },
@@ -147,7 +147,6 @@ export function ScoreboardProvider({ children }: { children: ReactNode }) {
         if (typeof window !== 'undefined') {
             try {
                 localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newState));
-                // Explicitly post a message to the broadcast channel
                 channel?.postMessage({ updated: true });
             } catch(e) {
                 console.error("Failed to save state or broadcast update", e);
@@ -217,45 +216,34 @@ export function ScoreboardProvider({ children }: { children: ReactNode }) {
 
       if (!scoreboardToUpdate) return prev;
       
-      // --- Data Sanitization ---
       const s = scoreboardToUpdate.score;
       s.teamA.points = Number(s.teamA.points) || 0;
       s.teamA.games = Number(s.teamA.games) || 0;
       s.teamB.points = Number(s.teamB.points) || 0;
       s.teamB.games = Number(s.teamB.games) || 0;
       if (!s.sets) s.sets = [];
-      // --- End Sanitization ---
 
       const score = scoreboardToUpdate.score;
       const opponent = team === 'teamA' ? 'teamB' : 'teamA';
       
       let myPoints = score[team].points;
       
-      if (change === -1) { // Decrement
+      if (change === -1) {
         if (myPoints > 0) {
             score[team].points--;
-        } else { // myPoints is 0, so decrement games
-            if (score[team].games > 0) {
-                score[team].games--;
-            }
-            // Cannot decrement further into previous sets for simplicity
+        } else if (score[team].games > 0) {
+            score[team].games--;
         }
-        return newState; // Return early after decrement
+        return newState;
       } 
       
-      // --- Increment Logic ---
-      const theirPoints = score[opponent].points;
-      
       let gameWon = false;
+      const theirPoints = score[opponent].points;
 
       if (myPoints === 3) { // 40
-        if (theirPoints <= 2) { // 0, 15, 30
-            gameWon = true;
-        } else if (theirPoints === 3) { // Deuce
-            score[team].points = 4; // AD
-        } else { // opponent has AD
-            score[opponent].points = 3; // Back to Deuce
-        }
+        if (theirPoints <= 2) { gameWon = true; } 
+        else if (theirPoints === 3) { score[team].points = 4; } // Deuce -> AD
+        else { score[opponent].points = 3; } // Opponent AD -> Deuce
       } else if (myPoints === 4) { // AD
         gameWon = true;
       } else {
@@ -267,11 +255,12 @@ export function ScoreboardProvider({ children }: { children: ReactNode }) {
         score.teamA.points = 0;
         score.teamB.points = 0;
 
-        // Check for set win after game change
         const myGames = score[team].games;
         const theirGames = score[opponent].games;
+        
+        const isSetWon = (myGames >= 6 && myGames - theirGames >= 2) || myGames === 7;
 
-        if ((myGames >= 6 && myGames - theirGames >= 2) || myGames === 7) {
+        if (isSetWon) {
             score.sets.push({ teamA: score.teamA.games, teamB: score.teamB.games });
             score.teamA.games = 0;
             score.teamB.games = 0;
@@ -325,7 +314,7 @@ export function ScoreboardProvider({ children }: { children: ReactNode }) {
       if (scoreboardToUpdate) {
         const { timers } = scoreboardToUpdate;
         if (timers.activeCountdown.type === type && timers.activeCountdown.endTime && timers.activeCountdown.endTime > Date.now()) {
-            timers.activeCountdown = { type: null, endTime: null }; // Toggle off if it's the same type and running
+            timers.activeCountdown = { type: null, endTime: null };
         } else {
             timers.activeCountdown = { type, endTime: Date.now() + duration };
         }
