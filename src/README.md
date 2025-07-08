@@ -1,7 +1,5 @@
 # Padel Scoreboard Web App
 
-This is a Next.js web application for managing and displaying padel match scoreboards.
-
 ---
 
 ### ✅ **Cómo Obtener tu URL Pública (Paso a Paso)**
