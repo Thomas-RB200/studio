@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+/* New class for transparent overlay background */
+body.overlay-active {
+  background-color: transparent !important;
+}
+
 body {
   font-family: Arial, Helvetica, sans-serif;
 }
