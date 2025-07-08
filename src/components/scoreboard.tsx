@@ -7,11 +7,12 @@ import { cn } from "@/lib/utils";
 
 // This component handles all timer logic and rendering
 const DynamicTimerDisplay = ({ timers }: { timers: TimerState }) => {
+    const [isClient, setIsClient] = useState(false);
     const [now, setNow] = useState(0);
 
     useEffect(() => {
-        // Set initial time on mount (client-side only)
-        setNow(Date.now());
+        setIsClient(true);
+        setNow(Date.now()); // Initialize time on mount
 
         const timerId = setInterval(() => {
             setNow(Date.now());
@@ -20,7 +21,6 @@ const DynamicTimerDisplay = ({ timers }: { timers: TimerState }) => {
         return () => clearInterval(timerId);
     }, []);
 
-    // Helper to format seconds into HH:MM:SS or MM:SS
     const formatTime = (seconds: number) => {
         if (isNaN(seconds) || seconds < 0) seconds = 0;
         const totalSeconds = Math.floor(seconds);
@@ -29,12 +29,13 @@ const DynamicTimerDisplay = ({ timers }: { timers: TimerState }) => {
         return `${minutes}:${secs}`;
     };
 
-    // On the server or before the first client-side render, show a static time.
-    if (now === 0) {
+    // On the server, and on the client's first render, isClient will be false.
+    if (!isClient) {
+        // Render a static placeholder that is identical on server and client.
         return (
             <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4 text-primary" />
-                <span className="text-lg font-mono">{formatTime(timers.accumulatedTime)}</span>
+                <span className="text-lg font-mono">00:00</span>
                 <span className="text-xs uppercase font-semibold text-primary">TIEMPO DE PARTIDO</span>
             </div>
         );

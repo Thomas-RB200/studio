@@ -3,8 +3,10 @@
 import { useScoreboard } from '@/context/ScoreboardContext';
 import Scoreboard from '@/components/scoreboard';
 import { useEffect } from 'react';
+import { useParams } from 'next/navigation';
 
-export default function OverlayPage({ params }: { params: { courtId: string } }) {
+export default function OverlayPage() {
+  const params = useParams() as { courtId: string };
   const { scoreboards, pointValues, theme, isInitialized } = useScoreboard();
 
   // This effect will run only on the client, after hydration, to avoid mismatches.
