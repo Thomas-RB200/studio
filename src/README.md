@@ -2,28 +2,30 @@
 
 This is a Next.js web application for managing and displaying padel match scoreboards.
 
+---
+
+### ✅ **Cómo Obtener tu URL Pública (Paso a Paso)**
+
+Para obtener el enlace **público y compartible** de tu aplicación, sigue estos pasos exactos:
+
+1.  **GUARDA TUS CAMBIOS (COMMIT):**
+    *   Ve al panel de **"Control de código fuente"** (el icono de las ramas 🌲 en la barra lateral izquierda).
+    *   Escribe un mensaje (ej: "Actualizando instrucciones").
+    *   Haz clic en el botón azul **"✓ Commit"**.
+
+2.  **ESPERA Y OBSERVA LA NOTIFICACIÓN:**
+    *   Después de hacer "Commit", el despliegue comenzará **automáticamente**. Tomará 1 o 2 minutos.
+    *   **Mira en la esquina inferior derecha de la ventana de Firebase Studio.** Aparecerá una notificación emergente que dirá algo como "Deployment to App Hosting finished".
+
+3.  **ENCUENTRA TU ENLACE:**
+    *   La notificación contendrá tu URL pública. Se verá así: `https://your-project-name.web.app`. ¡Ese es el enlace que puedes compartir!
+
+---
+
 ## Demo Credentials
 
 A list of demo user accounts with different roles can be found in the `CREDENTIALS.md` file.
 
-## How to Get Your Live App URL
-
-This application is set up with Firebase App Hosting. To get a live, shareable link for your PWA, follow these steps:
-
-1.  **Commit Your Changes:** Use the "Source Control" panel in Firebase Studio (the icon with branching lines on the left). Write a short message describing your changes (e.g., "Ready for testing") and click the **"Commit"** button.
-
-2.  **Wait for Automatic Deployment:** As soon as you commit, the deployment process starts automatically. It will take a minute or two.
-
-3.  **Get the URL:** Once finished, Firebase Studio will show you the **public URL** for your application in the notification area (e.g., `https://your-project-name.web.app`).
-
-This URL is your live application. Open it in your browser to install it, and share it with your testers.
-
 ## Running in Development (Local Machine)
 
-To run the application in development mode on your local machine, use the following command in your terminal:
-
-```bash
-npm run dev
-```
-
-This will start a local server, usually at `http://localhost:3000`. **This is only for testing inside Firebase Studio and does not create a shareable public link.**
+El comando `npm run dev` inicia un servidor **local** de desarrollo. **Este modo es solo para pruebas internas y NO crea un enlace público que puedas compartir.** Para obtener el enlace público, debes seguir los pasos de arriba.
