@@ -11,6 +11,7 @@ import AdsManager from '@/components/ads-manager';
 import UserManager from '@/components/user-manager';
 import LiveView from '@/components/live-view';
 import OverlayLinks from '@/components/overlay-links';
+import HealthMonitor from '@/components/health-monitor';
 
 // Hyper Admin, Super Admin, and Admin have access to the dashboard.
 const ADMIN_ROLES: UserRole[] = ['Hyper Admin', 'Super Admin', 'Admin'];
@@ -55,6 +56,8 @@ export default function DashboardPage() {
         return <UserManager users={users} setUsers={setUsers} />;
       case 'overlays':
         return <OverlayLinks />;
+      case 'health':
+        return <HealthMonitor />;
       case 'live':
       default:
         return <LiveView />;

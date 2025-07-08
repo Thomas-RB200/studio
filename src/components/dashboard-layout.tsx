@@ -13,11 +13,11 @@ import {
   SidebarInset,
   SidebarFooter,
 } from '@/components/ui/sidebar';
-import { Palette, Megaphone, Users, Tv, ExternalLink, LogOut, Link2 } from 'lucide-react';
+import { Palette, Megaphone, Users, Tv, ExternalLink, LogOut, Link2, HeartPulse } from 'lucide-react';
 import { useScoreboard } from '@/context/ScoreboardContext';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect } from 'react';
-import { ERROR_STORAGE_KEY, type AppErrorEvent } from '@/lib/error-reporting';
+import { ERROR_STORAGE_KEY } from '@/lib/error-reporting';
 import type { UserRole } from '@/lib/types';
 import { PadelIcon } from '@/components/icons';
 
@@ -28,7 +28,7 @@ interface DashboardLayoutProps {
 }
 
 const VIEWER_ADMIN_ROLES: UserRole[] = ['Hyper Admin', 'Super Admin', 'Admin'];
-const THEME_ADS_ROLES: UserRole[] = ['Hyper Admin', 'Super Admin'];
+const THEME_ADS_HEALTH_ROLES: UserRole[] = ['Hyper Admin', 'Super Admin'];
 const MANAGE_USERS_ROLES: UserRole[] = ['Hyper Admin', 'Super Admin', 'Admin'];
 
 
@@ -46,16 +46,11 @@ export default function DashboardLayout({ children, activeView, setActiveView }:
     const handleStorageChange = (event: StorageEvent) => {
       if (event.key === ERROR_STORAGE_KEY && event.newValue) {
         if (currentUser && (currentUser.role === 'Hyper Admin' || currentUser.role === 'Super Admin')) {
-          try {
-            const errorEvent: AppErrorEvent = JSON.parse(event.newValue);
             toast({
               variant: 'destructive',
-              title: 'Client-Side Error Reported',
-              description: `An error occurred: ${errorEvent.message}`,
+              title: 'New Client-Side Error Reported',
+              description: `An error was reported. Check the Health Monitor for details.`,
             });
-          } catch (e) {
-            console.error("Could not parse error event from storage", e);
-          }
         }
       }
     };
@@ -94,7 +89,7 @@ export default function DashboardLayout({ children, activeView, setActiveView }:
             )}
             
             {/* Items for Hyper and Super Admin */}
-            {currentUser && THEME_ADS_ROLES.includes(currentUser.role) && (
+            {currentUser && THEME_ADS_HEALTH_ROLES.includes(currentUser.role) && (
               <>
                 <SidebarMenuItem>
                   <SidebarMenuButton onClick={() => setActiveView('theme')} isActive={activeView === 'theme'}>
@@ -106,6 +101,12 @@ export default function DashboardLayout({ children, activeView, setActiveView }:
                   <SidebarMenuButton onClick={() => setActiveView('ads')} isActive={activeView === 'ads'}>
                     <Megaphone />
                     Ad Management
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton onClick={() => setActiveView('health')} isActive={activeView === 'health'}>
+                      <HeartPulse />
+                      Health Monitor
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               </>
