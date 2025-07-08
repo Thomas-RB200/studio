@@ -360,7 +360,7 @@ export function ScoreboardProvider({ children }: { children: ReactNode }) {
   }, [startCountdown]);
 
   if (!isInitialized) {
-    return <div className="flex h-screen w-full items-center justify-center">Initializing State...</div>;
+    return null;
   }
 
   const value = {
