@@ -58,12 +58,7 @@ const UserManagerComponent = ({ users, setUsers }: UserManagerProps) => {
     const [courtName, setCourtName] = useState('');
     const [courtTournamentName, setCourtTournamentName] = useState('');
     const [courtMatchName, setCourtMatchName] = useState('');
-    const { scoreboards, addScoreboard, updateScoreboard, currentUser: loggedInUser, theme } = useScoreboard();
-    const [isClient, setIsClient] = useState(false);
-
-    useEffect(() => {
-        setIsClient(true);
-    }, []);
+    const { scoreboards, addScoreboard, updateScoreboard, currentUser: loggedInUser, theme, isInitialized } = useScoreboard();
 
     const visibleUsers = useMemo(() => {
         if (!loggedInUser) return [];
@@ -304,7 +299,7 @@ const UserManagerComponent = ({ users, setUsers }: UserManagerProps) => {
                                                 <div className="flex items-center gap-2 text-sm">
                                                     <Power className="h-4 w-4 text-muted-foreground" /> Court Active
                                                 </div>
-                                                {isClient && court ? (
+                                                {isInitialized && court ? (
                                                     <Switch
                                                         checked={court.isActive}
                                                         onCheckedChange={(checked) => handleCourtActivation(court, checked)}
@@ -358,7 +353,7 @@ const UserManagerComponent = ({ users, setUsers }: UserManagerProps) => {
                                         <TableCell>{user.role}</TableCell>
                                         <TableCell>{court?.courtName || 'N/A'}</TableCell>
                                         <TableCell>
-                                          {isClient && court ? (
+                                          {isInitialized && court ? (
                                             <Switch
                                                 checked={court.isActive}
                                                 onCheckedChange={(checked) => handleCourtActivation(court, checked)}
