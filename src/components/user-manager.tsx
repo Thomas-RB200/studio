@@ -22,7 +22,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Edit, PlusCircle, Trash2, User as UserIcon, Mail, Shield, Grid } from 'lucide-react';
+import { Edit, PlusCircle, Trash2, User as UserIcon, Mail, Shield, Grid, KeyRound, Workflow, Info } from 'lucide-react';
 import React, { useState, useEffect, useMemo } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -286,8 +286,8 @@ const UserManagerComponent = ({ users, setUsers }: UserManagerProps) => {
                                             <CardDescription>{user.email}</CardDescription>
                                         </CardHeader>
                                         <CardContent className="space-y-2">
-                                            <div className="flex items-center gap-2 text-sm"><Shield /> {user.role}</div>
-                                            <div className="flex items-center gap-2 text-sm"><Grid /> {court?.courtName || 'N/A'}</div>
+                                            <div className="flex items-center gap-2 text-sm"><Shield className="h-4 w-4 text-muted-foreground" /> {user.role}</div>
+                                            <div className="flex items-center gap-2 text-sm"><Grid className="h-4 w-4 text-muted-foreground" /> {court?.courtName || 'N/A'}</div>
                                         </CardContent>
                                         <CardFooter className="flex justify-end gap-2">
                                             <Button variant="outline" size="icon" onClick={() => handleEdit(user)} disabled={actionIsDisabled}>
@@ -369,65 +369,88 @@ const UserManagerComponent = ({ users, setUsers }: UserManagerProps) => {
                     <div className="grid gap-4 py-4">
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="name" className="text-right">Name</Label>
-                            <Input id="name" value={currentUserForm.name || ''} onChange={(e) => setCurrentUserForm({...currentUserForm, name: e.target.value})} className="col-span-3" />
+                             <div className="relative col-span-3">
+                                <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Input id="name" value={currentUserForm.name || ''} onChange={(e) => setCurrentUserForm({...currentUserForm, name: e.target.value})} className="pl-10" />
+                            </div>
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="email" className="text-right">Email</Label>
-                            <Input id="email" type="email" value={currentUserForm.email || ''} onChange={(e) => setCurrentUserForm({...currentUserForm, email: e.target.value})} className="col-span-3" />
+                             <div className="relative col-span-3">
+                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Input id="email" type="email" value={currentUserForm.email || ''} onChange={(e) => setCurrentUserForm({...currentUserForm, email: e.target.value})} className="pl-10" />
+                            </div>
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="password" className="text-right">Password</Label>
-                            <Input 
-                                id="password" 
-                                type="password"
-                                value={currentUserForm.password || ''} 
-                                onChange={(e) => setCurrentUserForm({...currentUserForm, password: e.target.value})} 
-                                className="col-span-3" 
-                                placeholder={currentUserForm.id ? "Leave blank to keep unchanged" : "Required"}
-                            />
+                            <div className="relative col-span-3">
+                                <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Input 
+                                    id="password" 
+                                    type="password"
+                                    value={currentUserForm.password || ''} 
+                                    onChange={(e) => setCurrentUserForm({...currentUserForm, password: e.target.value})} 
+                                    className="pl-10"
+                                    placeholder={currentUserForm.id ? "Leave blank to keep unchanged" : "Required"}
+                                />
+                            </div>
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="role" className="text-right">Role</Label>
-                            <Select value={currentUserForm.role} onValueChange={(value: UserRole) => setCurrentUserForm({...currentUserForm, role: value})} disabled={!!currentUserForm.id && loggedInUser?.role !== 'Hyper Admin'}>
-                                <SelectTrigger className="col-span-3">
-                                    <SelectValue placeholder="Select a role" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {availableRoles.map(role => {
-                                        const limitInfo = creationLimits[role as UserRole];
-                                        const isDisabled = !currentUserForm.id && (limitInfo ? limitInfo.count >= limitInfo.limit : false);
-                                        return <SelectItem key={role} value={role} disabled={isDisabled}>{role}{isDisabled ? ' (Limit Reached)' : ''}</SelectItem>
-                                    })}
-                                </SelectContent>
-                            </Select>
+                            <div className="relative col-span-3">
+                                <Shield className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
+                                <Select value={currentUserForm.role} onValueChange={(value: UserRole) => setCurrentUserForm({...currentUserForm, role: value})} disabled={!!currentUserForm.id && loggedInUser?.role !== 'Hyper Admin'}>
+                                    <SelectTrigger className="pl-10">
+                                        <SelectValue placeholder="Select a role" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {availableRoles.map(role => {
+                                            const limitInfo = creationLimits[role as UserRole];
+                                            const isDisabled = !currentUserForm.id && (limitInfo ? limitInfo.count >= limitInfo.limit : false);
+                                            return <SelectItem key={role} value={role} disabled={isDisabled}>{role}{isDisabled ? ' (Limit Reached)' : ''}</SelectItem>
+                                        })}
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
                         {currentUserForm.role && COURT_ASSIGNABLE_ROLES.includes(currentUserForm.role) && (
                             <>
                                 <div className="grid grid-cols-4 items-center gap-4">
                                     <Label htmlFor="courtName" className="text-right">Court Name</Label>
-                                    <Input id="courtName" value={courtName} onChange={(e) => setCourtName(e.target.value)} className="col-span-3" placeholder="e.g. Cancha Central" />
+                                    <div className="relative col-span-3">
+                                        <Grid className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                        <Input id="courtName" value={courtName} onChange={(e) => setCourtName(e.target.value)} className="pl-10" placeholder="e.g. Cancha Central" />
+                                    </div>
                                 </div>
                                 <div className="grid grid-cols-4 items-center gap-4">
                                     <Label htmlFor="tournamentName" className="text-right">Tournament</Label>
-                                    <Input id="tournamentName" value={courtTournamentName} onChange={(e) => setCourtTournamentName(e.target.value)} className="col-span-3" placeholder="e.g. World Padel Tour" />
+                                     <div className="relative col-span-3">
+                                        <Workflow className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                        <Input id="tournamentName" value={courtTournamentName} onChange={(e) => setCourtTournamentName(e.target.value)} className="pl-10" placeholder="e.g. World Padel Tour" />
+                                    </div>
                                 </div>
                                 <div className="grid grid-cols-4 items-center gap-4">
                                     <Label htmlFor="matchName" className="text-right">Match Info</Label>
-                                    <Input id="matchName" value={courtMatchName} onChange={(e) => setCourtMatchName(e.target.value)} className="col-span-3" placeholder="e.g. Final" />
+                                    <div className="relative col-span-3">
+                                        <Info className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                        <Input id="matchName" value={courtMatchName} onChange={(e) => setCourtMatchName(e.target.value)} className="pl-10" placeholder="e.g. Final" />
+                                    </div>
                                 </div>
                             </>
                         )}
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="status" className="text-right">Status</Label>
-                            <Select value={currentUserForm.status} onValueChange={(value: 'Active' | 'Inactive') => setCurrentUserForm({...currentUserForm, status: value})}>
-                                <SelectTrigger className="col-span-3">
-                                    <SelectValue placeholder="Select status" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="Active">Active</SelectItem>
-                                    <SelectItem value="Inactive">Inactive</SelectItem>
-                                </SelectContent>
-                            </Select>
+                             <div className="relative col-span-3">
+                                <Select value={currentUserForm.status} onValueChange={(value: 'Active' | 'Inactive') => setCurrentUserForm({...currentUserForm, status: value})}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select status" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Active">Active</SelectItem>
+                                        <SelectItem value="Inactive">Inactive</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
                     </div>
                     <DialogFooter>
