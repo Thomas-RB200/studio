@@ -23,17 +23,20 @@ export default function DashboardPage() {
     ads, setAds,
     users, setUsers,
     currentUser,
+    isInitialized,
   } = useScoreboard();
   const router = useRouter();
 
   useEffect(() => {
+    if (!isInitialized) return;
+
     if (!currentUser) {
       router.push('/login');
     } else if (!ADMIN_ROLES.includes(currentUser.role)) {
       // If a user without admin rights (like a Referee) lands here, redirect them.
       router.push('/referee');
     }
-  }, [currentUser, router]);
+  }, [currentUser, router, isInitialized]);
 
   useEffect(() => {
     // If the current user is an 'Admin', default their view to 'users'
@@ -64,7 +67,7 @@ export default function DashboardPage() {
     }
   };
 
-  if (!currentUser || !ADMIN_ROLES.includes(currentUser.role)) {
+  if (!isInitialized || !currentUser || !ADMIN_ROLES.includes(currentUser.role)) {
     return <div className="flex items-center justify-center h-screen">Authenticating...</div>;
   }
 

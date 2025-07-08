@@ -12,14 +12,14 @@ import { useToast } from "@/hooks/use-toast";
 import type { UserRole } from '@/lib/types';
 
 export default function LoginPage() {
-  const { login, currentUser } = useScoreboard();
+  const { login, currentUser, isInitialized } = useScoreboard();
   const router = useRouter();
   const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   useEffect(() => {
-    if (currentUser) {
+    if (isInitialized && currentUser) {
       // All admins go to the main dashboard. Only Referees go to the referee page.
       if (currentUser.role === 'Referee') {
         router.push('/referee');
@@ -27,7 +27,7 @@ export default function LoginPage() {
         router.push('/');
       }
     }
-  }, [currentUser, router]);
+  }, [currentUser, router, isInitialized]);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,7 +43,7 @@ export default function LoginPage() {
     // Redirection is handled by the useEffect above
   };
   
-  if (currentUser) {
+  if (!isInitialized || currentUser) {
     return <div className="flex items-center justify-center h-screen">Authenticated. Redirecting...</div>;
   }
 

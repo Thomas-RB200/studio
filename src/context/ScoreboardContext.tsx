@@ -21,6 +21,7 @@ interface ScoreboardContextType extends GlobalState {
   startWarmupTimer: (scoreboardId: string) => void;
   addScoreboard: (newScoreboard: Omit<Scoreboard, 'id'>) => void;
   setServingTeam: (scoreboardId: string, team: 'teamA' | 'teamB') => void;
+  isInitialized: boolean;
 }
 
 const ScoreboardContext = createContext<ScoreboardContextType | undefined>(undefined);
@@ -354,10 +355,6 @@ export function ScoreboardProvider({ children }: { children: ReactNode }) {
     startCountdown(scoreboardId, 'warmup', 5 * 60 * 1000);
   }, [startCountdown]);
 
-  if (!isInitialized) {
-    return null;
-  }
-
   const value = {
     ...globalState,
     setTheme,
@@ -375,6 +372,7 @@ export function ScoreboardProvider({ children }: { children: ReactNode }) {
     startWarmupTimer,
     addScoreboard,
     setServingTeam,
+    isInitialized,
   };
 
   return (

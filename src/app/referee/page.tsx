@@ -138,6 +138,7 @@ function RefereePageView() {
     scoreboards,
     currentUser,
     updateScoreboard,
+    isInitialized,
   } = useScoreboard();
   const router = useRouter();
   const [activeView, setActiveView] = useState('live');
@@ -154,13 +155,15 @@ function RefereePageView() {
 
 
   useEffect(() => {
+    if (!isInitialized) return;
+
     if (!currentUser) {
       router.push('/login');
     } else if (currentUser.role && !REFEREE_ROLES.includes(currentUser.role)) {
       // If a non-referee (like an Admin) lands here, send them to the main dashboard.
       router.push('/'); 
     }
-  }, [currentUser, router]);
+  }, [currentUser, router, isInitialized]);
   
   const renderView = () => {
     switch (activeView) {
@@ -179,7 +182,7 @@ function RefereePageView() {
     }
   };
 
-  if (!currentUser || (currentUser.role && !REFEREE_ROLES.includes(currentUser.role))) {
+  if (!isInitialized || !currentUser || (currentUser.role && !REFEREE_ROLES.includes(currentUser.role))) {
     return <div className="flex items-center justify-center h-screen">Authenticating...</div>;
   }
 
