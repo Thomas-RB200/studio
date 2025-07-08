@@ -25,16 +25,6 @@ interface ScoreboardContextType extends GlobalState {
 
 const ScoreboardContext = createContext<ScoreboardContextType | undefined>(undefined);
 
-const defaultTimerState: TimerState = {
-    gameStartTime: null,
-    isGameRunning: false,
-    accumulatedTime: 0,
-    activeCountdown: {
-        type: null,
-        endTime: null,
-    },
-};
-
 const COURT_ASSIGNABLE_ROLES: UserRole[] = ['Referee'];
 
 const hyperAdminId = 'hyper-admin-user';
@@ -60,7 +50,15 @@ const scoreboards: Scoreboard[] = Array.from({ length: 10 }, (_, i) => ({
     isActive: true,
     teams: { teamA: `Antonio Luque / Miguel Oliveira`, teamB: `Miguel Yanguas / Aris Patiniotis` },
     score: { teamA: { points: 0, games: 0 }, teamB: { points: 0, games: 0 }, sets: [] },
-    timers: defaultTimerState,
+    timers: {
+        gameStartTime: null,
+        isGameRunning: false,
+        accumulatedTime: 0,
+        activeCountdown: {
+            type: null,
+            endTime: null,
+        },
+    },
     servingTeam: 'teamA',
 }));
 
@@ -300,6 +298,15 @@ export function ScoreboardProvider({ children }: { children: ReactNode }) {
       const newState = JSON.parse(JSON.stringify(prev)) as GlobalState;
       const scoreboardToUpdate = newState.scoreboards.find(sb => sb.id === scoreboardId);
       if (scoreboardToUpdate) {
+        const defaultTimerState = {
+            gameStartTime: null,
+            isGameRunning: false,
+            accumulatedTime: 0,
+            activeCountdown: {
+                type: null,
+                endTime: null,
+            },
+        };
         scoreboardToUpdate.score = { teamA: { points: 0, games: 0 }, teamB: { points: 0, games: 0 }, sets: [] };
         scoreboardToUpdate.timers = { ...defaultTimerState };
         scoreboardToUpdate.servingTeam = 'teamA';
