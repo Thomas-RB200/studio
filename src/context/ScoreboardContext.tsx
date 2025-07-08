@@ -88,8 +88,8 @@ const defaultState: GlobalState = {
   scoreboards: scoreboards,
 };
 
-const LOCAL_STORAGE_KEY = 'padelScoreboardState_v11';
-const SESSION_STORAGE_USER_KEY = 'padelCurrentUser_v11';
+const LOCAL_STORAGE_KEY = 'padelScoreboardState_v12';
+const SESSION_STORAGE_USER_KEY = 'padelCurrentUser_v12';
 
 export function ScoreboardProvider({ children }: { children: ReactNode }) {
   const [globalState, setGlobalState] = useState<GlobalState>(defaultState);

@@ -17,7 +17,7 @@ import PublicThemeHandler from '@/components/public-theme-handler';
 
 
 // IMPORTANT: These must match the values in ScoreboardContext.tsx
-const LOCAL_STORAGE_KEY = 'padelScoreboardState_v11';
+const LOCAL_STORAGE_KEY = 'padelScoreboardState_v12';
 // The 'storage' event is the primary update mechanism. This interval is a fallback.
 const REFRESH_INTERVAL_MS = 2000; 
 
