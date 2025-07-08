@@ -106,8 +106,6 @@ export function ScoreboardProvider({ children }: { children: ReactNode }) {
       if (storedState) {
         setGlobalState(JSON.parse(storedState));
       } else {
-        // If no state is in localStorage, initialize it with the default.
-        // This ensures all tabs start from the same baseline.
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(defaultState));
         setGlobalState(defaultState);
       }
@@ -118,7 +116,6 @@ export function ScoreboardProvider({ children }: { children: ReactNode }) {
       }
     } catch (e) {
       console.error("Failed to initialize state from storage", e);
-      // If something goes wrong, reset to a known good state.
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(defaultState));
       setGlobalState(defaultState);
       sessionStorage.clear();
@@ -149,8 +146,6 @@ export function ScoreboardProvider({ children }: { children: ReactNode }) {
         const newState = updater(currentState);
         if (typeof window !== 'undefined') {
             try {
-                // This will trigger the 'storage' event in other tabs.
-                // The current tab is updated by the return value of this function.
                 localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newState));
             } catch(e) {
                 console.error("Failed to save state to localStorage", e);
