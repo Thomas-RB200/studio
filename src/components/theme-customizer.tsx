@@ -148,7 +148,7 @@ export default function ThemeCustomizer({ theme, setTheme, scoreboard, updateSco
             <Card className="lg:col-span-1">
               <CardHeader>
                 <CardTitle>Configuración General</CardTitle>
-                <CardDescription>Personaliza el título principal del marcador.</CardDescription>
+                <CardDescription>Define los textos por defecto para toda la aplicación.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid gap-2">
@@ -157,6 +157,22 @@ export default function ThemeCustomizer({ theme, setTheme, scoreboard, updateSco
                     id="scoreboardTitle"
                     value={localTheme.scoreboardTitle}
                     onChange={(e) => handleThemeChange('scoreboardTitle', e.target.value)}
+                  />
+                </div>
+                 <div className="grid gap-2">
+                  <Label htmlFor="tournamentName">Nombre del Torneo (por defecto)</Label>
+                  <Input
+                    id="tournamentName"
+                    value={localTheme.tournamentName || ''}
+                    onChange={(e) => handleThemeChange('tournamentName', e.target.value)}
+                  />
+                </div>
+                 <div className="grid gap-2">
+                  <Label htmlFor="matchName">Info. del Partido (por defecto)</Label>
+                  <Input
+                    id="matchName"
+                    value={localTheme.matchName || ''}
+                    onChange={(e) => handleThemeChange('matchName', e.target.value)}
                   />
                 </div>
               </CardContent>

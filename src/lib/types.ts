@@ -25,6 +25,8 @@ export interface Theme {
   accentColor: string;
   backgroundType: 'color' | 'image';
   backgroundImage: string | null;
+  tournamentName?: string;
+  matchName?: string;
 }
 
 export interface TimerState {

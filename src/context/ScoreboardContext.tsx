@@ -72,6 +72,8 @@ const defaultState: GlobalState = {
     accentColor: '#f59e0b',
     backgroundType: 'color',
     backgroundImage: null,
+    tournamentName: 'World Padel Tour',
+    matchName: 'Victoria',
   },
   ads: [
     { id: '1', title: 'Nike', imageUrl: 'https://placehold.co/400x120/000000/FFFFFF/png?text=NIKE&font=raleway', 'data-ai-hint': 'nike logo' },
@@ -88,8 +90,8 @@ const defaultState: GlobalState = {
   scoreboards: scoreboards,
 };
 
-const LOCAL_STORAGE_KEY = 'padelScoreboardState_v12';
-const SESSION_STORAGE_USER_KEY = 'padelCurrentUser_v12';
+const LOCAL_STORAGE_KEY = 'padelScoreboardState_v13';
+const SESSION_STORAGE_USER_KEY = 'padelCurrentUser_v13';
 
 export function ScoreboardProvider({ children }: { children: ReactNode }) {
   const [globalState, setGlobalState] = useState<GlobalState>(defaultState);

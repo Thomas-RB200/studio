@@ -57,7 +57,7 @@ const UserManagerComponent = ({ users, setUsers }: UserManagerProps) => {
     const [courtName, setCourtName] = useState('');
     const [courtTournamentName, setCourtTournamentName] = useState('');
     const [courtMatchName, setCourtMatchName] = useState('');
-    const { scoreboards, addScoreboard, updateScoreboard, currentUser: loggedInUser } = useScoreboard();
+    const { scoreboards, addScoreboard, updateScoreboard, currentUser: loggedInUser, theme } = useScoreboard();
 
     const visibleUsers = useMemo(() => {
         if (!loggedInUser) return [];
@@ -153,8 +153,8 @@ const UserManagerComponent = ({ users, setUsers }: UserManagerProps) => {
                     // User was just made a referee, create a scoreboard for them
                      addScoreboard({
                         courtName: courtName || `Cancha de ${updatedUser.name}`,
-                        tournamentName: courtTournamentName || 'World Padel Tour',
-                        matchName: courtMatchName || 'Victoria',
+                        tournamentName: courtTournamentName || theme.tournamentName,
+                        matchName: courtMatchName || theme.matchName,
                         refereeId: updatedUser.id,
                         isActive: updatedUser.status === 'Active',
                         teams: { teamA: 'Pareja A', teamB: 'Pareja B' },
@@ -195,8 +195,8 @@ const UserManagerComponent = ({ users, setUsers }: UserManagerProps) => {
                 const newCourtName = courtName || `Cancha de ${newUser.name}`;
                 addScoreboard({
                     courtName: newCourtName,
-                    tournamentName: courtTournamentName || 'World Padel Tour',
-                    matchName: courtMatchName || 'Victoria',
+                    tournamentName: courtTournamentName || theme.tournamentName,
+                    matchName: courtMatchName || theme.matchName,
                     refereeId: newId, 
                     isActive: newUser.status === 'Active',
                     teams: { teamA: 'Pareja A', teamB: 'Pareja B' },
@@ -426,14 +426,14 @@ const UserManagerComponent = ({ users, setUsers }: UserManagerProps) => {
                                     <Label htmlFor="tournamentName" className="text-right">Tournament</Label>
                                      <div className="relative col-span-3">
                                         <Workflow className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                        <Input id="tournamentName" value={courtTournamentName} onChange={(e) => setCourtTournamentName(e.target.value)} className="pl-10" placeholder="e.g. World Padel Tour" />
+                                        <Input id="tournamentName" value={courtTournamentName} onChange={(e) => setCourtTournamentName(e.target.value)} className="pl-10" placeholder={theme.tournamentName || "e.g. World Padel Tour"} />
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-4 items-center gap-4">
                                     <Label htmlFor="matchName" className="text-right">Match Info</Label>
                                     <div className="relative col-span-3">
                                         <Info className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                        <Input id="matchName" value={courtMatchName} onChange={(e) => setCourtMatchName(e.target.value)} className="pl-10" placeholder="e.g. Final" />
+                                        <Input id="matchName" value={courtMatchName} onChange={(e) => setCourtMatchName(e.target.value)} className="pl-10" placeholder={theme.matchName || "e.g. Final"} />
                                     </div>
                                 </div>
                             </>

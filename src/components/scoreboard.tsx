@@ -77,6 +77,7 @@ const Scoreboard = ({
   score,
   pointValues,
   timers,
+  theme,
   servingTeam,
   tournamentName,
   matchName,
@@ -86,7 +87,7 @@ const Scoreboard = ({
   score: ScoreboardData['score'];
   pointValues: string[];
   timers: TimerState;
-  theme: Theme; // Keep theme for potential future use or overlay styling
+  theme: Theme;
   isReadOnly?: boolean;
   isOverlay?: boolean;
   servingTeam: 'teamA' | 'teamB' | null;
@@ -139,8 +140,8 @@ const Scoreboard = ({
     )}>
 
       <div className="flex justify-between items-center mb-2 px-2 text-xs sm:text-sm">
-        <p className="font-bold uppercase">{tournamentName || 'World Padel Tour'}</p>
-        <p className="font-bold uppercase">{matchName || 'Victoria'}</p>
+        <p className="font-bold uppercase">{tournamentName || theme.tournamentName || 'Torneo'}</p>
+        <p className="font-bold uppercase">{matchName || theme.matchName || 'Partido'}</p>
       </div>
       
       <div className="bg-foreground/20 p-px grid gap-px" style={{ gridTemplateColumns }}>
