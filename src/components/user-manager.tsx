@@ -22,11 +22,12 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Edit, PlusCircle, Trash2, User as UserIcon, Mail, Shield, Grid, KeyRound, Workflow, Info } from 'lucide-react';
+import { Edit, PlusCircle, Trash2, User as UserIcon, Mail, Shield, Grid, KeyRound, Workflow, Info, Power } from 'lucide-react';
 import React, { useState, useEffect, useMemo } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useScoreboard } from '@/context/ScoreboardContext';
+import { Switch } from '@/components/ui/switch';
 
 
 const defaultTimerState = {
@@ -113,6 +114,14 @@ const UserManagerComponent = ({ users, setUsers }: UserManagerProps) => {
             setCourtMatchName('');
         }
     }, [currentUserForm, scoreboards]);
+    
+    const handleCourtActivation = (court: Scoreboard, newStatus: boolean) => {
+        updateScoreboard(court.id, { isActive: newStatus });
+        toast({
+            title: "Court Status Updated",
+            description: `${court.courtName} is now ${newStatus ? 'active' : 'inactive'}.`,
+        });
+    };
 
     const handleSaveUser = () => {
         if (!currentUserForm.name || !currentUserForm.email || !currentUserForm.role) {
@@ -124,7 +133,6 @@ const UserManagerComponent = ({ users, setUsers }: UserManagerProps) => {
             const originalUserIndex = users.findIndex(u => u.id === currentUserForm.id);
             if (originalUserIndex === -1) return;
 
-            // Prepare the updated user data
             const updatedUser = { ...users[originalUserIndex], ...currentUserForm } as User;
             if (!currentUserForm.password) delete updatedUser.password;
             
@@ -132,31 +140,31 @@ const UserManagerComponent = ({ users, setUsers }: UserManagerProps) => {
             updatedUsers[originalUserIndex] = updatedUser;
             setUsers(updatedUsers);
 
-            // Handle scoreboard association based on role and status
             const wasReferee = users[originalUserIndex].role === 'Referee';
             const isNowReferee = updatedUser.role === 'Referee';
             const existingSb = scoreboards.find(sb => sb.refereeId === updatedUser.id);
 
             if (isNowReferee) {
                 if (existingSb) {
-                    // User is still a referee, check for updates to their scoreboard
                     const scoreboardUpdates: Partial<Scoreboard> = {};
                     if (courtName && existingSb.courtName !== courtName) scoreboardUpdates.courtName = courtName;
                     if (courtTournamentName !== existingSb.tournamentName) scoreboardUpdates.tournamentName = courtTournamentName;
                     if (courtMatchName !== existingSb.matchName) scoreboardUpdates.matchName = courtMatchName;
-                    if (existingSb.isActive !== (updatedUser.status === 'Active')) scoreboardUpdates.isActive = updatedUser.status === 'Active';
+
+                    if (updatedUser.status === 'Inactive') {
+                        scoreboardUpdates.isActive = false;
+                    }
 
                     if (Object.keys(scoreboardUpdates).length > 0) {
                         updateScoreboard(existingSb.id, scoreboardUpdates);
                     }
                 } else {
-                    // User was just made a referee, create a scoreboard for them
                      addScoreboard({
                         courtName: courtName || `Cancha de ${updatedUser.name}`,
                         tournamentName: courtTournamentName || theme.tournamentName,
                         matchName: courtMatchName || theme.matchName,
                         refereeId: updatedUser.id,
-                        isActive: updatedUser.status === 'Active',
+                        isActive: false,
                         teams: { teamA: 'Pareja A', teamB: 'Pareja B' },
                         score: { teamA: { points: 0, games: 0 }, teamB: { points: 0, games: 0 }, sets: [] },
                         timers: defaultTimerState,
@@ -164,7 +172,6 @@ const UserManagerComponent = ({ users, setUsers }: UserManagerProps) => {
                     });
                 }
             } else if (wasReferee && existingSb) {
-                // User is no longer a referee, disassociate and deactivate their old scoreboard
                 updateScoreboard(existingSb.id, { refereeId: null, isActive: false });
             }
             
@@ -198,7 +205,7 @@ const UserManagerComponent = ({ users, setUsers }: UserManagerProps) => {
                     tournamentName: courtTournamentName || theme.tournamentName,
                     matchName: courtMatchName || theme.matchName,
                     refereeId: newId, 
-                    isActive: newUser.status === 'Active',
+                    isActive: false, // New courts start as inactive
                     teams: { teamA: 'Pareja A', teamB: 'Pareja B' },
                     score: { teamA: { points: 0, games: 0 }, teamB: { points: 0, games: 0 }, sets: [] },
                     timers: defaultTimerState,
@@ -288,6 +295,21 @@ const UserManagerComponent = ({ users, setUsers }: UserManagerProps) => {
                                         <CardContent className="space-y-2">
                                             <div className="flex items-center gap-2 text-sm"><Shield className="h-4 w-4 text-muted-foreground" /> {user.role}</div>
                                             <div className="flex items-center gap-2 text-sm"><Grid className="h-4 w-4 text-muted-foreground" /> {court?.courtName || 'N/A'}</div>
+                                            <div className="flex items-center justify-between pt-2">
+                                                <div className="flex items-center gap-2 text-sm">
+                                                    <Power className="h-4 w-4 text-muted-foreground" /> Court Active
+                                                </div>
+                                                {court ? (
+                                                    <Switch
+                                                        checked={court.isActive}
+                                                        onCheckedChange={(checked) => handleCourtActivation(court, checked)}
+                                                        disabled={user.status === 'Inactive'}
+                                                        aria-label="Toggle court activation"
+                                                    />
+                                                ) : (
+                                                    <span className="text-sm text-muted-foreground">N/A</span>
+                                                )}
+                                            </div>
                                         </CardContent>
                                         <CardFooter className="flex justify-end gap-2">
                                             <Button variant="outline" size="icon" onClick={() => handleEdit(user)} disabled={actionIsDisabled}>
@@ -312,6 +334,7 @@ const UserManagerComponent = ({ users, setUsers }: UserManagerProps) => {
                                     <TableHead>Email</TableHead>
                                     <TableHead>Role</TableHead>
                                     <TableHead>Court</TableHead>
+                                    <TableHead>Court Active</TableHead>
                                     <TableHead>Status</TableHead>
                                     <TableHead className="text-right">Actions</TableHead>
                                 </TableRow>
@@ -329,6 +352,16 @@ const UserManagerComponent = ({ users, setUsers }: UserManagerProps) => {
                                         <TableCell>{user.email}</TableCell>
                                         <TableCell>{user.role}</TableCell>
                                         <TableCell>{court?.courtName || 'N/A'}</TableCell>
+                                        <TableCell>
+                                          {court ? (
+                                            <Switch
+                                                checked={court.isActive}
+                                                onCheckedChange={(checked) => handleCourtActivation(court, checked)}
+                                                disabled={user.status === 'Inactive'}
+                                                aria-label="Toggle court activation"
+                                            />
+                                          ) : 'N/A'}
+                                        </TableCell>
                                         <TableCell>
                                             <Badge variant={user.status === 'Active' ? 'default' : 'secondary'}>
                                                 {user.status}

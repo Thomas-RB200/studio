@@ -1,7 +1,7 @@
 'use client';
 
 import type { Ad, User, Theme, TimerState, Scoreboard, UserRole, GlobalState, SetScore } from '@/lib/types';
-import React, { createContext, useContext, useState, ReactNode, useCallback, useEffect } from 'react';
+import React, from 'react';
 
 const pointValues = ['0', '15', '30', '40', 'AD'];
 
@@ -24,7 +24,7 @@ interface ScoreboardContextType extends GlobalState {
   isInitialized: boolean;
 }
 
-const ScoreboardContext = createContext<ScoreboardContextType | undefined>(undefined);
+const ScoreboardContext = React.createContext<ScoreboardContextType | undefined>(undefined);
 
 const COURT_ASSIGNABLE_ROLES: UserRole[] = ['Referee'];
 
@@ -49,7 +49,7 @@ const scoreboards: Scoreboard[] = Array.from({ length: 10 }, (_, i) => ({
     id: `court-${i + 1}`,
     courtName: `Cancha ${i + 1}`,
     refereeId: `referee-user-${i + 1}`,
-    isActive: i < 4, // Activate the first 4 courts for easier testing
+    isActive: false, // All courts are inactive by default
     teams: { teamA: `Antonio Luque / Miguel Oliveira`, teamB: `Miguel Yanguas / Aris Patiniotis` },
     score: { teamA: { points: 0, games: 0 }, teamB: { points: 0, games: 0 }, sets: [] },
     timers: {
@@ -96,12 +96,12 @@ const defaultState: GlobalState = {
 const LOCAL_STORAGE_KEY = 'padelScoreboardState_v15';
 const SESSION_STORAGE_USER_KEY = 'padelCurrentUser_v15';
 
-export function ScoreboardProvider({ children }: { children: ReactNode }) {
-  const [globalState, setGlobalState] = useState<GlobalState>(defaultState);
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [isInitialized, setIsInitialized] = useState(false);
+export function ScoreboardProvider({ children }: { children: React.ReactNode }) {
+  const [globalState, setGlobalState] = React.useState<GlobalState>(defaultState);
+  const [currentUser, setCurrentUser] = React.useState<User | null>(null);
+  const [isInitialized, setIsInitialized] = React.useState(false);
 
-  useEffect(() => {
+  React.useEffect(() => {
     try {
       const storedState = localStorage.getItem(LOCAL_STORAGE_KEY);
       if (storedState) {
@@ -125,7 +125,7 @@ export function ScoreboardProvider({ children }: { children: ReactNode }) {
     setIsInitialized(true);
   }, []);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (!isInitialized) return;
 
     const handleStorageChange = (event: StorageEvent) => {
@@ -142,7 +142,7 @@ export function ScoreboardProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('storage', handleStorageChange);
   }, [isInitialized]);
 
-  const updateStateAndStorage = useCallback((updater: (prevState: GlobalState) => GlobalState) => {
+  const updateStateAndStorage = React.useCallback((updater: (prevState: GlobalState) => GlobalState) => {
     setGlobalState(currentState => {
         const newState = updater(currentState);
         if (typeof window !== 'undefined') {
@@ -156,19 +156,19 @@ export function ScoreboardProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const setTheme = useCallback((theme: Theme) => {
+  const setTheme = React.useCallback((theme: Theme) => {
     updateStateAndStorage(prev => ({ ...prev, theme }));
   }, [updateStateAndStorage]);
 
-  const setAds = useCallback((ads: Ad[]) => {
+  const setAds = React.useCallback((ads: Ad[]) => {
     updateStateAndStorage(prev => ({ ...prev, ads }));
   }, [updateStateAndStorage]);
 
-  const setUsers = useCallback((users: User[]) => {
+  const setUsers = React.useCallback((users: User[]) => {
     updateStateAndStorage(prev => ({ ...prev, users }));
   }, [updateStateAndStorage]);
 
-  const login = useCallback((email: string, password: string): User | null => {
+  const login = React.useCallback((email: string, password: string): User | null => {
     const user = globalState.users.find(u => u.email === email && u.password === password && u.status === 'Active');
     if (user) {
       setCurrentUser(user);
@@ -180,12 +180,12 @@ export function ScoreboardProvider({ children }: { children: ReactNode }) {
     return null;
   }, [globalState.users]);
 
-  const logout = useCallback(() => {
+  const logout = React.useCallback(() => {
     setCurrentUser(null);
     sessionStorage.removeItem(SESSION_STORAGE_USER_KEY);
   }, []);
   
-  const updateScoreboard = useCallback((id: string, updates: Partial<Scoreboard>) => {
+  const updateScoreboard = React.useCallback((id: string, updates: Partial<Scoreboard>) => {
     updateStateAndStorage(prev => {
         const newScoreboards = prev.scoreboards.map(sb => 
             sb.id === id ? { ...sb, ...updates } : sb
@@ -194,7 +194,7 @@ export function ScoreboardProvider({ children }: { children: ReactNode }) {
     });
   }, [updateStateAndStorage]);
 
-  const addScoreboard = useCallback((newScoreboardData: Omit<Scoreboard, 'id'>) => {
+  const addScoreboard = React.useCallback((newScoreboardData: Omit<Scoreboard, 'id'>) => {
       updateStateAndStorage(prev => {
           const newScoreboard: Scoreboard = {
               id: `court-${Date.now()}`,
@@ -208,7 +208,7 @@ export function ScoreboardProvider({ children }: { children: ReactNode }) {
       });
   }, [updateStateAndStorage]);
 
-  const setServingTeam = useCallback((scoreboardId: string, team: 'teamA' | 'teamB') => {
+  const setServingTeam = React.useCallback((scoreboardId: string, team: 'teamA' | 'teamB') => {
     updateStateAndStorage(prev => ({
         ...prev,
         scoreboards: prev.scoreboards.map(sb => 
@@ -217,7 +217,7 @@ export function ScoreboardProvider({ children }: { children: ReactNode }) {
     }));
   }, [updateStateAndStorage]);
 
-  const handleScoreChange = useCallback((scoreboardId: string, team: 'teamA' | 'teamB', change: 1 | -1) => {
+  const handleScoreChange = React.useCallback((scoreboardId: string, team: 'teamA' | 'teamB', change: 1 | -1) => {
     updateStateAndStorage(prev => {
       const newScoreboards = prev.scoreboards.map(sb => {
         if (sb.id !== scoreboardId) return sb;
@@ -287,7 +287,7 @@ export function ScoreboardProvider({ children }: { children: ReactNode }) {
     });
   }, [updateStateAndStorage]);
 
-  const resetScore = useCallback((scoreboardId: string) => {
+  const resetScore = React.useCallback((scoreboardId: string) => {
     updateStateAndStorage(prev => ({
         ...prev,
         scoreboards: prev.scoreboards.map(sb => {
@@ -307,7 +307,7 @@ export function ScoreboardProvider({ children }: { children: ReactNode }) {
     }));
   }, [updateStateAndStorage]);
 
-  const handleGameTimer = useCallback((scoreboardId: string) => {
+  const handleGameTimer = React.useCallback((scoreboardId: string) => {
     updateStateAndStorage(prev => {
         const newScoreboards = prev.scoreboards.map(sb => {
             if (sb.id !== scoreboardId) return sb;
@@ -330,7 +330,7 @@ export function ScoreboardProvider({ children }: { children: ReactNode }) {
     });
   }, [updateStateAndStorage]);
 
-  const startCountdown = useCallback((scoreboardId: string, type: 'serve' | 'warmup', duration: number) => {
+  const startCountdown = React.useCallback((scoreboardId: string, type: 'serve' | 'warmup', duration: number) => {
     updateStateAndStorage(prev => ({
         ...prev,
         scoreboards: prev.scoreboards.map(sb => {
@@ -347,15 +347,15 @@ export function ScoreboardProvider({ children }: { children: ReactNode }) {
     }));
   }, [updateStateAndStorage]);
 
-  const startServeTimer = useCallback((scoreboardId: string) => {
+  const startServeTimer = React.useCallback((scoreboardId: string) => {
     startCountdown(scoreboardId, 'serve', 25 * 1000);
   }, [startCountdown]);
 
-  const startWarmupTimer = useCallback((scoreboardId: string) => {
+  const startWarmupTimer = React.useCallback((scoreboardId: string) => {
     startCountdown(scoreboardId, 'warmup', 5 * 60 * 1000);
   }, [startCountdown]);
 
-  const value = {
+  const value: ScoreboardContextType = {
     ...globalState,
     setTheme,
     setAds,
@@ -383,7 +383,7 @@ export function ScoreboardProvider({ children }: { children: ReactNode }) {
 }
 
 export function useScoreboard() {
-  const context = useContext(ScoreboardContext);
+  const context = React.useContext(ScoreboardContext);
   if (context === undefined) {
     throw new Error('useScoreboard must be used within a ScoreboardProvider');
   }
