@@ -4,7 +4,18 @@ import { useScoreboard } from '@/context/ScoreboardContext';
 import Scoreboard from '@/components/scoreboard';
 
 export default function OverlayPage({ params }: { params: { courtId: string } }) {
-  const { scoreboards, pointValues, theme } = useScoreboard();
+  const { scoreboards, pointValues, theme, isInitialized } = useScoreboard();
+
+  // Wait for the context to be initialized on the client to prevent hydration errors
+  if (!isInitialized) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <div className="rounded-lg bg-card p-4 text-center text-card-foreground">
+          Initializing Overlay...
+        </div>
+      </div>
+    );
+  }
 
   const scoreboard = scoreboards.find(sb => sb.id === params.courtId);
 

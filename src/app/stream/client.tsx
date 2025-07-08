@@ -2,7 +2,7 @@
 
 import Scoreboard from '@/components/scoreboard';
 import { useSearchParams } from 'next/navigation';
-import { useRef, useEffect, useState, useCallback } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import Image from 'next/image';
 import {
   Carousel,
@@ -36,28 +36,29 @@ function StreamView() {
   const [liveData, setLiveData] = useState<GlobalState | null>(null);
   const plugin = useRef(Autoplay({ delay: 4000, stopOnInteraction: true, loop: true }));
   const searchParams = useSearchParams();
-
-  const syncState = useCallback(() => {
-    try {
-      const storedStateJSON = localStorage.getItem(LOCAL_STORAGE_KEY);
-      if (storedStateJSON) {
-        setLiveData(JSON.parse(storedStateJSON));
-      } else {
+  
+  // By moving all localStorage access and state updates into useEffect,
+  // we ensure this code only runs on the client, after the initial server-rendered
+  // content has been "hydrated". This prevents mismatches.
+  useEffect(() => {
+    const syncState = () => {
+      try {
+        const storedStateJSON = localStorage.getItem(LOCAL_STORAGE_KEY);
+        if (storedStateJSON) {
+          setLiveData(JSON.parse(storedStateJSON));
+        } else {
+          setLiveData(null);
+        }
+      } catch (e) {
+        console.error("Failed to sync state from localStorage", e);
         setLiveData(null);
       }
-    } catch (e) {
-      console.error("Failed to sync state from localStorage", e);
-      setLiveData(null);
-    }
-  }, []);
+    };
 
-  useEffect(() => {
-    // This function runs when the component loads.
-    
-    // 1. Initial Sync: Get the current data right away.
+    // 1. Initial Sync: Get the current data right away on mount.
     syncState(); 
     
-    // 2. Real-time Listener: This is the best way. It listens for changes from other tabs instantly.
+    // 2. Real-time Listener: Listens for changes from other tabs.
     const handleStorageChange = (event: StorageEvent) => {
         if (event.key === LOCAL_STORAGE_KEY) {
             syncState();
@@ -65,16 +66,18 @@ function StreamView() {
     };
     window.addEventListener('storage', handleStorageChange);
 
-    // 3. Fallback Polling: This is a safety net, checking for updates every few seconds.
+    // 3. Fallback Polling: Safety net to check for updates every few seconds.
     const intervalId = setInterval(syncState, REFRESH_INTERVAL_MS);
     
-    // Cleanup function: This runs when the component is removed, to prevent memory leaks.
+    // Cleanup function: Prevents memory leaks when the component is unmounted.
     return () => {
         clearInterval(intervalId);
         window.removeEventListener('storage', handleStorageChange);
     };
-  }, [syncState]);
+  }, []); // The empty dependency array [] means this effect runs only once on mount.
   
+  // On the server, and on the client's initial render, liveData will be `null`.
+  // This ensures the server and client render the same thing, avoiding hydration errors.
   if (!liveData || !liveData.scoreboards || !liveData.theme || !liveData.ads) {
     return (
         <div className="flex h-screen w-full items-center justify-center bg-background">
