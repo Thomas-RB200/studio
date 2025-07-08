@@ -18,7 +18,8 @@ import PublicThemeHandler from '@/components/public-theme-handler';
 
 // IMPORTANT: These must match the values in ScoreboardContext.tsx
 const LOCAL_STORAGE_KEY = 'padelScoreboardState_v11';
-const REFRESH_INTERVAL_MS = 3000;
+// The 'storage' event is the primary update mechanism. This interval is a fallback.
+const REFRESH_INTERVAL_MS = 2000; 
 
 const pointValues = ['0', '15', '30', '40', 'AD'];
 
@@ -51,9 +52,27 @@ function StreamView() {
   }, []);
 
   useEffect(() => {
-    syncState(); // Initial sync
+    // This function runs when the component loads.
+    
+    // 1. Initial Sync: Get the current data right away.
+    syncState(); 
+    
+    // 2. Real-time Listener: This is the best way. It listens for changes from other tabs instantly.
+    const handleStorageChange = (event: StorageEvent) => {
+        if (event.key === LOCAL_STORAGE_KEY) {
+            syncState();
+        }
+    };
+    window.addEventListener('storage', handleStorageChange);
+
+    // 3. Fallback Polling: This is a safety net, checking for updates every few seconds.
     const intervalId = setInterval(syncState, REFRESH_INTERVAL_MS);
-    return () => clearInterval(intervalId);
+    
+    // Cleanup function: This runs when the component is removed, to prevent memory leaks.
+    return () => {
+        clearInterval(intervalId);
+        window.removeEventListener('storage', handleStorageChange);
+    };
   }, [syncState]);
   
   if (!liveData || !liveData.scoreboards || !liveData.theme || !liveData.ads) {
