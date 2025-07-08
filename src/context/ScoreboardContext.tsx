@@ -90,12 +90,6 @@ const defaultState: GlobalState = {
 
 const LOCAL_STORAGE_KEY = 'padelScoreboardState_v11';
 const SESSION_STORAGE_USER_KEY = 'padelCurrentUser_v11';
-const BROADCAST_CHANNEL_NAME = 'padel_scoreboard_channel';
-
-let channel: BroadcastChannel | null = null;
-if (typeof window !== 'undefined') {
-  channel = new BroadcastChannel(BROADCAST_CHANNEL_NAME);
-}
 
 export function ScoreboardProvider({ children }: { children: ReactNode }) {
   const [globalState, setGlobalState] = useState<GlobalState>(defaultState);
@@ -148,8 +142,19 @@ export function ScoreboardProvider({ children }: { children: ReactNode }) {
         const newState = updater(currentState);
         if (typeof window !== 'undefined') {
             try {
-                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newState));
-                channel?.postMessage({ updated: true });
+                const oldState = localStorage.getItem(LOCAL_STORAGE_KEY);
+                const newStateJSON = JSON.stringify(newState);
+                
+                // Fire storage event manually since setItem doesn't fire it for the same tab.
+                // This ensures instant updates within the same admin browser window.
+                window.dispatchEvent(new StorageEvent('storage', {
+                    key: LOCAL_STORAGE_KEY,
+                    oldValue: oldState,
+                    newValue: newStateJSON,
+                    url: window.location.href,
+                    storageArea: localStorage,
+                }));
+                localStorage.setItem(LOCAL_STORAGE_KEY, newStateJSON);
             } catch(e) {
                 console.error("Failed to save state or broadcast update", e);
             }
@@ -189,12 +194,10 @@ export function ScoreboardProvider({ children }: { children: ReactNode }) {
   
   const updateScoreboard = useCallback((id: string, updates: Partial<Scoreboard>) => {
     updateStateAndStorage(prev => {
-        const newState = JSON.parse(JSON.stringify(prev)) as GlobalState;
-        const scoreboardIndex = newState.scoreboards.findIndex(sb => sb.id === id);
-        if (scoreboardIndex !== -1) {
-            newState.scoreboards[scoreboardIndex] = { ...newState.scoreboards[scoreboardIndex], ...updates };
-        }
-        return newState;
+        const newScoreboards = prev.scoreboards.map(sb => 
+            sb.id === id ? { ...sb, ...updates } : sb
+        );
+        return { ...prev, scoreboards: newScoreboards };
     });
   }, [updateStateAndStorage]);
 
@@ -213,146 +216,142 @@ export function ScoreboardProvider({ children }: { children: ReactNode }) {
   }, [updateStateAndStorage]);
 
   const setServingTeam = useCallback((scoreboardId: string, team: 'teamA' | 'teamB') => {
-    updateStateAndStorage(prev => {
-        const newState = JSON.parse(JSON.stringify(prev)) as GlobalState;
-        const scoreboardToUpdate = newState.scoreboards.find(sb => sb.id === scoreboardId);
-        if (scoreboardToUpdate) {
-            scoreboardToUpdate.servingTeam = team;
-        }
-        return newState;
-    });
+    updateStateAndStorage(prev => ({
+        ...prev,
+        scoreboards: prev.scoreboards.map(sb => 
+            sb.id === scoreboardId ? { ...sb, servingTeam: team } : sb
+        ),
+    }));
   }, [updateStateAndStorage]);
 
   const handleScoreChange = useCallback((scoreboardId: string, team: 'teamA' | 'teamB', change: 1 | -1) => {
     updateStateAndStorage(prev => {
-      const newState = JSON.parse(JSON.stringify(prev)) as GlobalState;
-      const scoreboardToUpdate = newState.scoreboards.find(sb => sb.id === scoreboardId);
+      const newScoreboards = prev.scoreboards.map(sb => {
+        if (sb.id !== scoreboardId) return sb;
 
-      if (!scoreboardToUpdate) return prev;
-      
-      const s = scoreboardToUpdate.score;
-      // Ensure scores are numbers
-      s.teamA.points = Number(s.teamA.points) || 0;
-      s.teamA.games = Number(s.teamA.games) || 0;
-      s.teamB.points = Number(s.teamB.points) || 0;
-      s.teamB.games = Number(s.teamB.games) || 0;
-      if (!s.sets) s.sets = [];
-
-      // Check if match is over (best of 3 sets)
-      const setsWonA = s.sets.filter(set => set.teamA > set.teamB).length;
-      const setsWonB = s.sets.filter(set => set.teamB > set.teamA).length;
-      if (setsWonA === 2 || setsWonB === 2) {
-          return newState; // Match is over, no more scoring
-      }
-
-      const score = scoreboardToUpdate.score;
-      const opponent = team === 'teamA' ? 'teamB' : 'teamA';
-      
-      let myPoints = score[team].points;
-      
-      if (change === -1) {
-        if (myPoints > 0) {
-            score[team].points--;
-        } else if (score[team].games > 0) {
-            score[team].games--;
-        }
-        return newState;
-      } 
-      
-      let gameWon = false;
-      const theirPoints = score[opponent].points;
-
-      if (myPoints === 3) { // 40
-        if (theirPoints <= 2) { gameWon = true; } 
-        else if (theirPoints === 3) { score[team].points = 4; } // Deuce -> AD
-        else { score[opponent].points = 3; } // Opponent AD -> Deuce
-      } else if (myPoints === 4) { // AD
-        gameWon = true;
-      } else {
-        score[team].points++;
-      }
-      
-      if (gameWon) {
-        score[team].games++;
-        score.teamA.points = 0;
-        score.teamB.points = 0;
-
-        const myGames = score[team].games;
-        const theirGames = score[opponent].games;
+        const scoreboardToUpdate = JSON.parse(JSON.stringify(sb));
         
-        const isSetWon = (myGames >= 6 && myGames - theirGames >= 2) || myGames === 7;
+        const s = scoreboardToUpdate.score;
+        s.teamA.points = Number(s.teamA.points) || 0;
+        s.teamA.games = Number(s.teamA.games) || 0;
+        s.teamB.points = Number(s.teamB.points) || 0;
+        s.teamB.games = Number(s.teamB.games) || 0;
+        if (!s.sets) s.sets = [];
 
-        if (isSetWon && score.sets.length < 3) {
-            score.sets.push({ teamA: score.teamA.games, teamB: score.teamB.games });
-            score.teamA.games = 0;
-            score.teamB.games = 0;
+        const setsWonA = s.sets.filter(set => set.teamA > set.teamB).length;
+        const setsWonB = s.sets.filter(set => set.teamB > set.teamA).length;
+        if (setsWonA === 2 || setsWonB === 2) {
+            return sb;
         }
-      }
-      
-      return newState;
+
+        const score = scoreboardToUpdate.score;
+        const opponent = team === 'teamA' ? 'teamB' : 'teamA';
+        
+        let myPoints = score[team].points;
+        
+        if (change === -1) {
+          if (myPoints > 0) {
+              score[team].points--;
+          } else if (score[team].games > 0) {
+              score[team].games--;
+          }
+          return scoreboardToUpdate;
+        } 
+        
+        let gameWon = false;
+        const theirPoints = score[opponent].points;
+
+        if (myPoints === 3) {
+          if (theirPoints <= 2) { gameWon = true; } 
+          else if (theirPoints === 3) { score[team].points = 4; }
+          else { score[opponent].points = 3; }
+        } else if (myPoints === 4) {
+          gameWon = true;
+        } else {
+          score[team].points++;
+        }
+        
+        if (gameWon) {
+          score[team].games++;
+          score.teamA.points = 0;
+          score.teamB.points = 0;
+
+          const myGames = score[team].games;
+          const theirGames = score[opponent].games;
+          
+          const isSetWon = (myGames >= 6 && myGames - theirGames >= 2) || myGames === 7;
+
+          if (isSetWon && score.sets.length < 3) {
+              score.sets.push({ teamA: score.teamA.games, teamB: score.teamB.games });
+              score.teamA.games = 0;
+              score.teamB.games = 0;
+          }
+        }
+        
+        return scoreboardToUpdate;
+      });
+      return { ...prev, scoreboards: newScoreboards };
     });
   }, [updateStateAndStorage]);
 
   const resetScore = useCallback((scoreboardId: string) => {
-    updateStateAndStorage(prev => {
-      const newState = JSON.parse(JSON.stringify(prev)) as GlobalState;
-      const scoreboardToUpdate = newState.scoreboards.find(sb => sb.id === scoreboardId);
-      if (scoreboardToUpdate) {
-        const defaultTimerState = {
-            gameStartTime: null,
-            isGameRunning: false,
-            accumulatedTime: 0,
-            activeCountdown: {
-                type: null,
-                endTime: null,
-            },
-        };
-        scoreboardToUpdate.score = { teamA: { points: 0, games: 0 }, teamB: { points: 0, games: 0 }, sets: [] };
-        scoreboardToUpdate.timers = { ...defaultTimerState };
-        scoreboardToUpdate.servingTeam = 'teamA';
-      }
-      return newState;
-    });
+    updateStateAndStorage(prev => ({
+        ...prev,
+        scoreboards: prev.scoreboards.map(sb => {
+            if (sb.id !== scoreboardId) return sb;
+            return {
+                ...sb,
+                score: { teamA: { points: 0, games: 0 }, teamB: { points: 0, games: 0 }, sets: [] },
+                timers: {
+                    gameStartTime: null,
+                    isGameRunning: false,
+                    accumulatedTime: 0,
+                    activeCountdown: { type: null, endTime: null },
+                },
+                servingTeam: 'teamA',
+            };
+        }),
+    }));
   }, [updateStateAndStorage]);
 
   const handleGameTimer = useCallback((scoreboardId: string) => {
-    updateStateAndStorage(prev => {
-      const newState = JSON.parse(JSON.stringify(prev)) as GlobalState;
-      const scoreboardToUpdate = newState.scoreboards.find(sb => sb.id === scoreboardId);
-      
-      if (scoreboardToUpdate) {
-          const now = Date.now();
-          const { timers } = scoreboardToUpdate;
+    updateStateAndStorage(prev => ({
+        ...prev,
+        scoreboards: prev.scoreboards.map(sb => {
+            if (sb.id !== scoreboardId) return sb;
+            
+            const now = Date.now();
+            const timers = { ...sb.timers };
 
-          if (timers.isGameRunning) {
-            const elapsedSinceLastStart = timers.gameStartTime ? (now - timers.gameStartTime) : 0;
-            timers.isGameRunning = false;
-            timers.accumulatedTime = (timers.accumulatedTime || 0) + elapsedSinceLastStart / 1000;
-            timers.gameStartTime = null; 
-          } else {
-            timers.isGameRunning = true;
-            timers.gameStartTime = now;
-          }
-      }
-      return newState;
-    });
+            if (timers.isGameRunning) {
+              const elapsedSinceLastStart = timers.gameStartTime ? (now - timers.gameStartTime) : 0;
+              timers.isGameRunning = false;
+              timers.accumulatedTime = (timers.accumulatedTime || 0) + elapsedSinceLastStart / 1000;
+              timers.gameStartTime = null; 
+            } else {
+              timers.isGameRunning = true;
+              timers.gameStartTime = now;
+            }
+            return { ...sb, timers };
+        }),
+    }));
   }, [updateStateAndStorage]);
 
   const startCountdown = useCallback((scoreboardId: string, type: 'serve' | 'warmup', duration: number) => {
-    updateStateAndStorage(prev => {
-      const newState = JSON.parse(JSON.stringify(prev)) as GlobalState;
-      const scoreboardToUpdate = newState.scoreboards.find(sb => sb.id === scoreboardId);
+    updateStateAndStorage(prev => ({
+        ...prev,
+        scoreboards: prev.scoreboards.map(sb => {
+            if (sb.id !== scoreboardId) return sb;
 
-      if (scoreboardToUpdate) {
-        const { timers } = scoreboardToUpdate;
-        if (timers.activeCountdown.type === type && timers.activeCountdown.endTime && timers.activeCountdown.endTime > Date.now()) {
-            timers.activeCountdown = { type: null, endTime: null };
-        } else {
-            timers.activeCountdown = { type, endTime: Date.now() + duration };
-        }
-      }
-      return newState;
-    });
+            const timers = { ...sb.timers };
+            if (timers.activeCountdown.type === type && timers.activeCountdown.endTime && timers.activeCountdown.endTime > Date.now()) {
+                timers.activeCountdown = { type: null, endTime: null };
+            } else {
+                timers.activeCountdown = { type, endTime: Date.now() + duration };
+            }
+            return { ...sb, timers };
+        }),
+    }));
   }, [updateStateAndStorage]);
 
   const startServeTimer = useCallback((scoreboardId: string) => {
