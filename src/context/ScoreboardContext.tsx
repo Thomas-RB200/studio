@@ -48,7 +48,7 @@ const scoreboards: Scoreboard[] = Array.from({ length: 10 }, (_, i) => ({
     id: `court-${i + 1}`,
     courtName: `Cancha ${i + 1}`,
     refereeId: `referee-user-${i + 1}`,
-    isActive: true,
+    isActive: i === 0, // Only Court 1 is active by default for a cleaner start
     teams: { teamA: `Antonio Luque / Miguel Oliveira`, teamB: `Miguel Yanguas / Aris Patiniotis` },
     score: { teamA: { points: 0, games: 0 }, teamB: { points: 0, games: 0 }, sets: [] },
     timers: {
@@ -106,6 +106,8 @@ export function ScoreboardProvider({ children }: { children: ReactNode }) {
       if (storedState) {
         setGlobalState(JSON.parse(storedState));
       } else {
+        // If no state is in localStorage, initialize it with the default.
+        // This ensures all tabs start from the same baseline.
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(defaultState));
         setGlobalState(defaultState);
       }
@@ -116,6 +118,7 @@ export function ScoreboardProvider({ children }: { children: ReactNode }) {
       }
     } catch (e) {
       console.error("Failed to initialize state from storage", e);
+      // If something goes wrong, reset to a known good state.
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(defaultState));
       setGlobalState(defaultState);
       sessionStorage.clear();

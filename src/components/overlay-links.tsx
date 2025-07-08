@@ -15,7 +15,7 @@ const getSubordinateIds = (managerId: string, allUsers: User[]): string[] => {
     let allSubordinateIds = directSubordinates.map(u => u.id);
 
     directSubordinates.forEach(subordinate => {
-        allSubordinateIds = [...allSubordinateIds, ...getSubordinateIds(subordinate.id, allUsers)];
+        allSubordinateIds = [...allSubordinateIds, ...getSubordinates(subordinate.id, allUsers)];
     });
 
     return allSubordinateIds;
@@ -72,7 +72,7 @@ export default function OverlayLinks() {
                             </TableHeader>
                             <TableBody>
                                 {visibleScoreboards.map(sb => {
-                                    const overlayUrl = `${origin}/stream?overlay=true&id=${sb.id}`;
+                                    const overlayUrl = `${origin}/overlay/${sb.id}`;
                                     return (
                                         <TableRow key={sb.id}>
                                             <TableCell className="font-medium">{sb.courtName}</TableCell>
