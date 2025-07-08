@@ -356,13 +356,15 @@ const UserManagerComponent = ({ users, setUsers }: UserManagerProps) => {
                     <DialogHeader>
                         <DialogTitle>{currentUserForm.id ? 'Edit User' : 'Add New User'}</DialogTitle>
                         {isDialogOpen && !currentUserForm.id && Object.keys(creationLimits).length > 0 && (
-                            <DialogDescription className="pt-2">
-                                <p className="font-medium">Creation Limits:</p>
-                                {Object.entries(creationLimits).map(([role, limitInfo]) => (
-                                    <p key={role} className="text-sm text-muted-foreground pl-4">
-                                        - {role}s: {limitInfo.count} / {limitInfo.limit}
-                                    </p>
-                                ))}
+                            <DialogDescription asChild className="pt-2">
+                                <div>
+                                    <p className="font-medium">Creation Limits:</p>
+                                    {Object.entries(creationLimits).map(([role, limitInfo]) => (
+                                        <p key={role} className="text-sm text-muted-foreground pl-4">
+                                            - {role}s: {limitInfo.count} / {limitInfo.limit}
+                                        </p>
+                                    ))}
+                                </div>
                             </DialogDescription>
                         )}
                     </DialogHeader>
