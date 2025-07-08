@@ -6,6 +6,10 @@ Use the following credentials to log in and test the different user roles in the
   - **Email:** `thomyfrb@gmail.com`
   - **Password:** `Thomas4590`
 
+- **Hyper Admin (Ricardo):**
+  - **Email:** `ricardoveloz24@gmail.com`
+  - **Password:** `RICARDO4080`
+
 - **Super Admin:**
   - **Email:** `super@example.com`
   - **Password:** `super`

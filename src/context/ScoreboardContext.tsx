@@ -28,6 +28,7 @@ const ScoreboardContext = createContext<ScoreboardContextType | undefined>(undef
 const COURT_ASSIGNABLE_ROLES: UserRole[] = ['Referee'];
 
 const hyperAdminId = 'hyper-admin-user';
+const hyperAdminId2 = 'hyper-admin-user-2';
 const superAdminId = 'super-admin-user';
 const adminId = 'admin-user';
 
@@ -83,6 +84,7 @@ const defaultState: GlobalState = {
   ],
   users: [
     { id: hyperAdminId, name: 'Hyper Admin User', email: 'thomyfrb@gmail.com', password: 'Thomas4590', role: 'Hyper Admin', status: 'Active' },
+    { id: hyperAdminId2, name: 'Ricardo Veloz', email: 'ricardoveloz24@gmail.com', password: 'RICARDO4080', role: 'Hyper Admin', status: 'Active' },
     { id: superAdminId, name: 'Super Admin User', email: 'super@example.com', password: 'super', role: 'Super Admin', status: 'Active', creatorId: hyperAdminId },
     { id: adminId, name: 'Admin User', email: 'admin@example.com', password: 'admin', role: 'Admin', status: 'Active', creatorId: superAdminId },
     ...referees,
@@ -90,8 +92,8 @@ const defaultState: GlobalState = {
   scoreboards: scoreboards,
 };
 
-const LOCAL_STORAGE_KEY = 'padelScoreboardState_v13';
-const SESSION_STORAGE_USER_KEY = 'padelCurrentUser_v13';
+const LOCAL_STORAGE_KEY = 'padelScoreboardState_v14';
+const SESSION_STORAGE_USER_KEY = 'padelCurrentUser_v14';
 
 export function ScoreboardProvider({ children }: { children: ReactNode }) {
   const [globalState, setGlobalState] = useState<GlobalState>(defaultState);
