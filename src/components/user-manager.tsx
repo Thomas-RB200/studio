@@ -59,6 +59,11 @@ const UserManagerComponent = ({ users, setUsers }: UserManagerProps) => {
     const [courtTournamentName, setCourtTournamentName] = useState('');
     const [courtMatchName, setCourtMatchName] = useState('');
     const { scoreboards, addScoreboard, updateScoreboard, currentUser: loggedInUser, theme } = useScoreboard();
+    const [isClient, setIsClient] = useState(false);
+
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
 
     const visibleUsers = useMemo(() => {
         if (!loggedInUser) return [];
@@ -299,7 +304,7 @@ const UserManagerComponent = ({ users, setUsers }: UserManagerProps) => {
                                                 <div className="flex items-center gap-2 text-sm">
                                                     <Power className="h-4 w-4 text-muted-foreground" /> Court Active
                                                 </div>
-                                                {court ? (
+                                                {isClient && court ? (
                                                     <Switch
                                                         checked={court.isActive}
                                                         onCheckedChange={(checked) => handleCourtActivation(court, checked)}
@@ -307,7 +312,7 @@ const UserManagerComponent = ({ users, setUsers }: UserManagerProps) => {
                                                         aria-label="Toggle court activation"
                                                     />
                                                 ) : (
-                                                    <span className="text-sm text-muted-foreground">N/A</span>
+                                                    <div className="w-11 h-6 rounded-full bg-muted" />
                                                 )}
                                             </div>
                                         </CardContent>
@@ -353,14 +358,16 @@ const UserManagerComponent = ({ users, setUsers }: UserManagerProps) => {
                                         <TableCell>{user.role}</TableCell>
                                         <TableCell>{court?.courtName || 'N/A'}</TableCell>
                                         <TableCell>
-                                          {court ? (
+                                          {isClient && court ? (
                                             <Switch
                                                 checked={court.isActive}
                                                 onCheckedChange={(checked) => handleCourtActivation(court, checked)}
                                                 disabled={user.status === 'Inactive'}
                                                 aria-label="Toggle court activation"
                                             />
-                                          ) : 'N/A'}
+                                          ) : (
+                                            <div className="w-11 h-6 rounded-full bg-muted" />
+                                          )}
                                         </TableCell>
                                         <TableCell>
                                             <Badge variant={user.status === 'Active' ? 'default' : 'secondary'}>
