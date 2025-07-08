@@ -142,21 +142,11 @@ export function ScoreboardProvider({ children }: { children: ReactNode }) {
         const newState = updater(currentState);
         if (typeof window !== 'undefined') {
             try {
-                const oldState = localStorage.getItem(LOCAL_STORAGE_KEY);
-                const newStateJSON = JSON.stringify(newState);
-                
-                // Fire storage event manually since setItem doesn't fire it for the same tab.
-                // This ensures instant updates within the same admin browser window.
-                window.dispatchEvent(new StorageEvent('storage', {
-                    key: LOCAL_STORAGE_KEY,
-                    oldValue: oldState,
-                    newValue: newStateJSON,
-                    url: window.location.href,
-                    storageArea: localStorage,
-                }));
-                localStorage.setItem(LOCAL_STORAGE_KEY, newStateJSON);
+                // This will trigger the 'storage' event in other tabs.
+                // The current tab is updated by the return value of this function.
+                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newState));
             } catch(e) {
-                console.error("Failed to save state or broadcast update", e);
+                console.error("Failed to save state to localStorage", e);
             }
         }
         return newState;
@@ -315,9 +305,8 @@ export function ScoreboardProvider({ children }: { children: ReactNode }) {
   }, [updateStateAndStorage]);
 
   const handleGameTimer = useCallback((scoreboardId: string) => {
-    updateStateAndStorage(prev => ({
-        ...prev,
-        scoreboards: prev.scoreboards.map(sb => {
+    updateStateAndStorage(prev => {
+        const newScoreboards = prev.scoreboards.map(sb => {
             if (sb.id !== scoreboardId) return sb;
             
             const now = Date.now();
@@ -333,8 +322,9 @@ export function ScoreboardProvider({ children }: { children: ReactNode }) {
               timers.gameStartTime = now;
             }
             return { ...sb, timers };
-        }),
-    }));
+        });
+        return { ...prev, scoreboards: newScoreboards };
+    });
   }, [updateStateAndStorage]);
 
   const startCountdown = useCallback((scoreboardId: string, type: 'serve' | 'warmup', duration: number) => {
