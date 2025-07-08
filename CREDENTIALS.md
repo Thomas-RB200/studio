@@ -17,3 +17,9 @@ Use the following credentials to log in and test the different user roles in the
 - **Referee:**
   - **Email:** `referee1@example.com`
   - **Password:** `referee`
+
+---
+
+## Note for Testers
+
+You can use any of the accounts above to test the application's functionality. The "Referee" account is great for testing the scoring interface on a mobile device.
