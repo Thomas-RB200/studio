@@ -20,6 +20,17 @@ Para obtener el enlace **público y compartible** de tu aplicación, sigue estos
 
 ---
 
+### **Importante: Alojamiento en la Nube vs. Datos Locales**
+
+En esta versión de la aplicación, es crucial entender la diferencia entre dónde vive la aplicación y dónde viven los datos:
+
+*   **Alojamiento en la Nube:** La aplicación (el código HTML, CSS, JavaScript) está alojada en **Firebase App Hosting**. Por eso tienes una URL pública y accesible desde cualquier lugar.
+*   **Datos Locales:** Toda la información (marcadores, usuarios, tema, etc.) se guarda **localmente en tu navegador**, usando `localStorage`.
+
+**¿Qué significa esto?** Que para que los overlays y la página pública funcionen y reciban las actualizaciones del árbitro, **deben estar abiertos en el mismo navegador y en el mismo ordenador** donde se está gestionando el partido. La "señal" no viaja por internet, sino de una pestaña a otra.
+
+---
+
 ## Demo Credentials
 
 A list of demo user accounts with different roles can be found in the `CREDENTIALS.md` file.
