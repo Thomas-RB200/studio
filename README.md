@@ -6,15 +6,14 @@ This is a Next.js web application for managing and displaying padel match scoreb
 
 A list of demo user accounts with different roles can be found in the `CREDENTIALS.md` file.
 
-## How to Get Your Live App URL
+## How to Get Your Live App URL (Guaranteed Method)
 
-This application is set up with Firebase App Hosting. To get a live, shareable link for your PWA, follow these steps:
+If the automatic deployment notification in Firebase Studio does not appear, you can find your URL directly in the Firebase Console. This is the most reliable method.
 
-1.  **Commit Your Changes:** Use the "Source Control" panel in Firebase Studio (the icon with branching lines on the left). Write a short message describing your changes (e.g., "Ready for testing") and click the **"Commit"** button.
-
-2.  **Wait for Automatic Deployment:** As soon as you commit, the deployment process starts automatically. It will take a minute or two.
-
-3.  **Get the URL:** Once finished, Firebase Studio will show you the **public URL** for your application in the notification area (e.g., `https://your-project-name.web.app`).
+1.  **Go to the Firebase Console:** Open a new browser tab and navigate to [https://console.firebase.google.com/](https://console.firebase.google.com/).
+2.  **Select Your Project:** Click on the Firebase project you are currently working on.
+3.  **Navigate to App Hosting:** In the left-hand menu, under the "Build" section, click on **App Hosting**.
+4.  **Find Your URL:** On the App Hosting page, you will see your app listed. The public URL (e.g., `https://your-project-name.web.app`) will be displayed there.
 
 This URL is your live application. Open it in your browser to install it, and share it with your testers.
 
