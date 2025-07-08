@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import Providers from '@/components/providers';
+import '../globals.css';
 
 export const metadata: Metadata = {
   title: "Padelicius Score Overlay",
@@ -21,7 +23,9 @@ export default function OverlayLayout({
         />
       </head>
       <body className="font-body antialiased bg-transparent">
-        {children}
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );
