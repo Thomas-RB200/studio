@@ -3,8 +3,8 @@
 Use the following credentials to log in and test the different user roles in the application.
 
 - **Hyper Admin:**
-  - **Email:** `hiper@example.com`
-  - **Password:** `hiper`
+  - **Email:** `thomyfrb@gmail.com`
+  - **Password:** `Thomas4590`
 
 - **Super Admin:**
   - **Email:** `super@example.com`

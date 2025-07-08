@@ -80,7 +80,7 @@ const defaultState: GlobalState = {
     { id: '4', title: 'Head', imageUrl: 'https://placehold.co/400x120/FFA000/000000/png?text=HEAD&font=oswald', 'data-ai-hint': 'head logo' }
   ],
   users: [
-    { id: hyperAdminId, name: 'Hyper Admin User', email: 'hiper@example.com', password: 'hiper', role: 'Hyper Admin', status: 'Active' },
+    { id: hyperAdminId, name: 'Hyper Admin User', email: 'thomyfrb@gmail.com', password: 'Thomas4590', role: 'Hyper Admin', status: 'Active' },
     { id: superAdminId, name: 'Super Admin User', email: 'super@example.com', password: 'super', role: 'Super Admin', status: 'Active', creatorId: hyperAdminId },
     { id: adminId, name: 'Admin User', email: 'admin@example.com', password: 'admin', role: 'Admin', status: 'Active', creatorId: superAdminId },
     ...referees,
