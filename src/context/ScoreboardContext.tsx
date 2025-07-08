@@ -49,7 +49,7 @@ const scoreboards: Scoreboard[] = Array.from({ length: 10 }, (_, i) => ({
     id: `court-${i + 1}`,
     courtName: `Cancha ${i + 1}`,
     refereeId: `referee-user-${i + 1}`,
-    isActive: i === 0, // Only Court 1 is active by default for a cleaner start
+    isActive: i < 4, // Activate the first 4 courts for easier testing
     teams: { teamA: `Antonio Luque / Miguel Oliveira`, teamB: `Miguel Yanguas / Aris Patiniotis` },
     score: { teamA: { points: 0, games: 0 }, teamB: { points: 0, games: 0 }, sets: [] },
     timers: {
