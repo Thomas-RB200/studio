@@ -42,11 +42,11 @@ const referees: User[] = Array.from({ length: 10 }, (_, i) => ({
     creatorId: adminId,
 }));
 
+// Scoreboards are now created without specific tournament/match names.
+// They will inherit from the theme by default.
 const scoreboards: Scoreboard[] = Array.from({ length: 10 }, (_, i) => ({
     id: `court-${i + 1}`,
     courtName: `Cancha ${i + 1}`,
-    tournamentName: 'World Padel Tour',
-    matchName: 'Victoria',
     refereeId: `referee-user-${i + 1}`,
     isActive: true,
     teams: { teamA: `Antonio Luque / Miguel Oliveira`, teamB: `Miguel Yanguas / Aris Patiniotis` },
@@ -92,8 +92,8 @@ const defaultState: GlobalState = {
   scoreboards: scoreboards,
 };
 
-const LOCAL_STORAGE_KEY = 'padelScoreboardState_v14';
-const SESSION_STORAGE_USER_KEY = 'padelCurrentUser_v14';
+const LOCAL_STORAGE_KEY = 'padelScoreboardState_v15';
+const SESSION_STORAGE_USER_KEY = 'padelCurrentUser_v15';
 
 export function ScoreboardProvider({ children }: { children: ReactNode }) {
   const [globalState, setGlobalState] = useState<GlobalState>(defaultState);
