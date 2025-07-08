@@ -94,11 +94,12 @@ const Scoreboard = ({
   matchName?: string;
 }) => {
   
+  const numSetCols = Math.min(score.sets.length + 1, 3);
+  const gridTemplateColumns = `2fr ${'1fr '.repeat(numSetCols)} 1fr 1fr`;
+
   const teamASets = score.sets?.map(s => s.teamA) || [];
   const teamBSets = score.sets?.map(s => s.teamB) || [];
   
-  const gridTemplateColumns = "2fr repeat(5, 1fr)";
-
   const renderTeamRow = (
     teamName: string, 
     teamScore: { points: number; games: number; }, 
@@ -111,16 +112,14 @@ const Scoreboard = ({
           {isServing && <div className="w-2.5 h-2.5 bg-accent rounded-full" title="Serving"></div>}
           <span className="font-bold uppercase text-card-foreground whitespace-nowrap">{teamName}</span>
         </div>
-        {/* Set Columns */}
-        <div className="bg-card h-full flex items-center justify-center border-l border-background/50">
-            <span className="text-4xl font-bold text-primary">{teamSetScores[0] ?? ''}</span>
-        </div>
-        <div className="bg-card h-full flex items-center justify-center border-l border-background/50">
-            <span className="text-4xl font-bold text-primary">{teamSetScores[1] ?? ''}</span>
-        </div>
-        <div className="bg-card h-full flex items-center justify-center border-l border-background/50">
-            <span className="text-4xl font-bold text-primary">{teamSetScores[2] ?? ''}</span>
-        </div>
+        
+        {/* Dynamic Set Columns */}
+        {Array.from({ length: numSetCols }).map((_, i) => (
+            <div key={i} className="bg-card h-full flex items-center justify-center border-l border-background/50">
+                <span className="text-4xl font-bold text-primary">{teamSetScores[i] ?? ''}</span>
+            </div>
+        ))}
+
         {/* Games Column */}
         <div className="bg-card h-full flex items-center justify-center border-l border-background/50">
           <span className="text-4xl font-bold text-card-foreground">{teamScore.games}</span>
@@ -147,9 +146,12 @@ const Scoreboard = ({
       <div className="bg-foreground/20 p-px grid gap-px" style={{ gridTemplateColumns }}>
         {/* Headers */}
         <div className="p-2 text-xs font-semibold text-foreground/80 uppercase">Pareja</div>
-        <div className="p-2 text-center text-xs font-semibold text-foreground/80 uppercase">SET 1</div>
-        <div className="p-2 text-center text-xs font-semibold text-foreground/80 uppercase">SET 2</div>
-        <div className="p-2 text-center text-xs font-semibold text-foreground/80 uppercase">SET 3</div>
+        
+        {/* Dynamic Set Headers */}
+        {Array.from({ length: numSetCols }).map((_, i) => (
+            <div key={i} className="p-2 text-center text-xs font-semibold text-foreground/80 uppercase">{`SET ${i + 1}`}</div>
+        ))}
+        
         <div className="p-2 text-center text-xs font-semibold text-foreground/80 uppercase">Juegos</div>
         <div className="p-2 text-center text-xs font-semibold text-foreground/80 uppercase">Puntos</div>
         

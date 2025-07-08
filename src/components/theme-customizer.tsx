@@ -42,6 +42,8 @@ export default function ThemeCustomizer({ theme, setTheme, scoreboard, updateSco
   const [localTheme, setLocalTheme] = useState(theme);
   const [localTeamA, setLocalTeamA] = useState('');
   const [localTeamB, setLocalTeamB] = useState('');
+  const [localTournamentName, setLocalTournamentName] = useState('');
+  const [localMatchName, setLocalMatchName] = useState('');
 
   const isReferee = currentUser?.role === 'Referee';
 
@@ -50,6 +52,8 @@ export default function ThemeCustomizer({ theme, setTheme, scoreboard, updateSco
     if (scoreboard) {
         setLocalTeamA(scoreboard.teams.teamA);
         setLocalTeamB(scoreboard.teams.teamB);
+        setLocalTournamentName(scoreboard.tournamentName || '');
+        setLocalMatchName(scoreboard.matchName || '');
     }
   }, [theme, scoreboard]);
 
@@ -83,9 +87,13 @@ export default function ThemeCustomizer({ theme, setTheme, scoreboard, updateSco
         setTheme(localTheme);
     }
 
-    // Referees can change their court's team names
-    if (scoreboard && updateScoreboard && scoreboard.id) {
-        updateScoreboard(scoreboard.id, { teams: { teamA: localTeamA, teamB: localTeamB } });
+    // Referees can change their court's team names and match info
+    if (isReferee && scoreboard && updateScoreboard && scoreboard.id) {
+        updateScoreboard(scoreboard.id, { 
+            teams: { teamA: localTeamA, teamB: localTeamB },
+            tournamentName: localTournamentName,
+            matchName: localMatchName,
+        });
     }
 
     toast({
@@ -113,26 +121,46 @@ export default function ThemeCustomizer({ theme, setTheme, scoreboard, updateSco
         {isReferee && (
             <Card className="lg:col-span-3">
                 <CardHeader>
-                <CardTitle>Nombres de los Equipos</CardTitle>
-                <CardDescription>Personaliza los nombres de las parejas para el partido actual.</CardDescription>
+                <CardTitle>Configuración de la Cancha</CardTitle>
+                <CardDescription>Personaliza los nombres de las parejas y la información del partido actual.</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                <div className="grid gap-2">
-                    <Label htmlFor="teamAName">Pareja A</Label>
-                    <Input
-                    id="teamAName"
-                    value={localTeamA}
-                    onChange={(e) => setLocalTeamA(e.target.value)}
-                    />
-                </div>
-                <div className="grid gap-2">
-                    <Label htmlFor="teamBName">Pareja B</Label>
-                    <Input
-                    id="teamBName"
-                    value={localTeamB}
-                    onChange={(e) => setLocalTeamB(e.target.value)}
-                    />
-                </div>
+                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div className="grid gap-2">
+                        <Label htmlFor="teamAName">Pareja A</Label>
+                        <Input
+                        id="teamAName"
+                        value={localTeamA}
+                        onChange={(e) => setLocalTeamA(e.target.value)}
+                        />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="teamBName">Pareja B</Label>
+                        <Input
+                        id="teamBName"
+                        value={localTeamB}
+                        onChange={(e) => setLocalTeamB(e.target.value)}
+                        />
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <div className="grid gap-2">
+                        <Label htmlFor="tournamentName">Torneo</Label>
+                        <Input
+                        id="tournamentName"
+                        value={localTournamentName}
+                        onChange={(e) => setLocalTournamentName(e.target.value)}
+                        />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="matchName">Info. del Partido</Label>
+                        <Input
+                        id="matchName"
+                        value={localMatchName}
+                        onChange={(e) => setLocalMatchName(e.target.value)}
+                        />
+                    </div>
+                  </div>
                 </CardContent>
             </Card>
         )}
