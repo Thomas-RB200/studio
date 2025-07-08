@@ -29,4 +29,7 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default pwaRunner(nextConfig);
+// Conditionally apply PWA wrapper only in production
+export default process.env.NODE_ENV === 'development'
+  ? nextConfig
+  : pwaRunner(nextConfig);
