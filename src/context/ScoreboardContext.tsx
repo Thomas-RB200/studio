@@ -128,18 +128,37 @@ export function ScoreboardProvider({ children }: { children: React.ReactNode }) 
   React.useEffect(() => {
     if (!isInitialized) return;
 
-    const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === LOCAL_STORAGE_KEY && event.newValue) {
-        try {
-            setGlobalState(JSON.parse(event.newValue));
-        } catch (e) {
-            console.error("Failed to parse updated state from storage", e);
+    // This function syncs the state from localStorage.
+    // It's used by both the event listener and the polling interval.
+    const syncState = () => {
+      try {
+        const storedStateJSON = localStorage.getItem(LOCAL_STORAGE_KEY);
+        if (storedStateJSON) {
+          // React's set-state function is smart enough to not cause a re-render
+          // if the new state is identical to the current one.
+          setGlobalState(JSON.parse(storedStateJSON));
         }
+      } catch (e) {
+        console.error("Failed to parse updated state from storage", e);
       }
     };
-
+    
+    // 1. Listen for changes from other tabs in real-time.
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === LOCAL_STORAGE_KEY) {
+        syncState();
+      }
+    };
     window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+
+    // 2. Poll every 2 seconds as a fallback mechanism. This makes the sync very robust.
+    const intervalId = setInterval(syncState, 2000);
+
+    // Cleanup function to prevent memory leaks.
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(intervalId);
+    };
   }, [isInitialized]);
 
   const updateStateAndStorage = React.useCallback((updater: (prevState: GlobalState) => GlobalState) => {
