@@ -1,4 +1,4 @@
-# Padel Scoreboard Web App
+# Padel Scoreboard - Aplicación Web
 
 ---
 
@@ -31,10 +31,10 @@ En esta versión de la aplicación, es crucial entender la diferencia entre dón
 
 ---
 
-## Demo Credentials
+## Credenciales de Demostración
 
-A list of demo user accounts with different roles can be found in the `CREDENTIALS.md` file.
+Una lista de cuentas de usuario de demostración con diferentes roles se puede encontrar en el archivo `CREDENTIALS.md`.
 
-## Running in Development (Local Machine)
+## Ejecución en Desarrollo (Máquina Local)
 
 El comando `npm run dev` inicia un servidor **local** de desarrollo. **Este modo es solo para pruebas internas y NO crea un enlace público que puedas compartir.** Para obtener el enlace público, debes seguir los pasos de arriba.

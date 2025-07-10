@@ -1,73 +1,73 @@
-# Padel Scoreboard Web App
+# Padel Scoreboard - Aplicación Web
 
-This is a Next.js web application for managing and displaying padel match scoreboards.
+Esta es una aplicación web Next.js para gestionar y mostrar marcadores de partidos de pádel.
 
-## How to Download and Run This Project Locally
+## Cómo Descargar y Ejecutar Este Proyecto Localmente
 
-Follow these instructions to download the project code and run it on your own computer or deploy it to another hosting service.
+Sigue estas instrucciones para descargar el código del proyecto y ejecutarlo en tu propio ordenador o desplegarlo en otro servicio de hosting.
 
-### Step 1: Download the Code
+### Paso 1: Descargar el Código
 
-1.  In the Firebase Studio interface, look for the main menu (usually a "hamburger" icon ☰ in the top-left).
-2.  Find and select the **"Download"** or **"Export"** option. This will download a `.zip` file containing all the project files to your computer.
-3.  Unzip the downloaded file in a folder where you want to work.
+1.  En la interfaz de Firebase Studio, busca el menú principal (normalmente un icono de "hamburguesa" ☰ en la esquina superior izquierda).
+2.  Encuentra y selecciona la opción **"Descargar"** o **"Exportar"**. Esto descargará un archivo `.zip` con todos los archivos del proyecto a tu ordenador.
+3.  Descomprime el archivo descargado en una carpeta donde quieras trabajar.
 
-### Step 2: Install Prerequisites
+### Paso 2: Instalar Prerrequisitos
 
-To work with this project, you need [Node.js](https://nodejs.org/) installed on your computer. It comes with `npm` (Node Package Manager), which is necessary to install the project's dependencies.
+Para trabajar con este proyecto, necesitas tener [Node.js](https://nodejs.org/) instalado en tu ordenador. Viene con `npm` (Node Package Manager), que es necesario para instalar las dependencias del proyecto.
 
--   You can download Node.js from its official website. Version 18 or newer is recommended.
+-   Puedes descargar Node.js desde su sitio web oficial. Se recomienda la versión 18 o más reciente.
 
-### Step 3: Install Project Dependencies
+### Paso 3: Instalar Dependencias del Proyecto
 
-1.  Open your computer's terminal or command prompt.
-2.  Navigate to the folder where you unzipped the project files. For example: `cd path/to/your/project-folder`
-3.  Once inside the project folder, run the following command to install all the necessary libraries and packages listed in `package.json`:
+1.  Abre la terminal o línea de comandos de tu ordenador.
+2.  Navega a la carpeta donde descomprimiste los archivos del proyecto. Por ejemplo: `cd ruta/a/tu/carpeta-del-proyecto`
+3.  Una vez dentro de la carpeta del proyecto, ejecuta el siguiente comando para instalar todas las librerías y paquetes necesarios listados en `package.json`:
 
     ```bash
     npm install
     ```
 
-    This might take a few minutes to complete.
+    Esto podría tardar unos minutos en completarse.
 
-### Step 4: Run in Development Mode (Local Machine)
+### Paso 4: Ejecutar en Modo de Desarrollo (Máquina Local)
 
-To run the application in development mode on your local machine, use the following command in your terminal:
+Para ejecutar la aplicación en modo de desarrollo en tu máquina local, usa el siguiente comando en tu terminal:
 
 ```bash
 npm run dev
 ```
 
-This will start a local server, usually at **`http://localhost:3000`**. You can open this URL in your browser to see and interact with the application. This URL is only accessible on your computer.
+Esto iniciará un servidor local, normalmente en **`http://localhost:3000`**. Puedes abrir esta URL en tu navegador para ver e interactuar con la aplicación. Esta URL solo es accesible en tu ordenador.
 
-### Step 5: Building for Production
+### Paso 5: Compilar para Producción
 
-When you are ready to deploy the application to a live web server, you first need to create a "production build". This process optimizes the code for performance and speed.
+Cuando estés listo para desplegar la aplicación en un servidor web en vivo, primero necesitas crear una "build de producción". Este proceso optimiza el código para rendimiento y velocidad.
 
-Run this command in your terminal:
+Ejecuta este comando en tu terminal:
 
 ```bash
 npm run build
 ```
 
-This will create a new folder named `.next` in your project directory. This folder contains the optimized, production-ready version of your app.
+Esto creará una nueva carpeta llamada `.next` en tu directorio de proyecto. Esta carpeta contiene la versión optimizada y lista para producción de tu app.
 
-### Step 6: Deploying to a Hosting Provider
+### Paso 6: Desplegar en un Proveedor de Hosting
 
-You can deploy this Next.js application to any hosting provider that supports Node.js. The easiest and most recommended options are platforms specifically designed for this kind of app, like **Vercel** (created by the makers of Next.js) or **Netlify**.
+Puedes desplegar esta aplicación Next.js en cualquier proveedor de hosting que soporte Node.js. Las opciones más fáciles y recomendadas son plataformas específicamente diseñadas para este tipo de apps, como **Vercel** (creado por los creadores de Next.js) o **Netlify**.
 
-**General Steps for Deployment (e.g., on Vercel):**
+**Pasos Generales para el Despliegue (ej: en Vercel):**
 
-1.  **Push your code to a Git repository** (like GitHub, GitLab, or Bitbucket).
-2.  **Sign up for a Vercel account** (you can use your GitHub account).
-3.  **Import your Git repository** into Vercel.
-4.  Vercel will automatically detect that it's a Next.js project. It will use the correct build command (`npm run build`) and output directory (`.next`).
-5.  Click **"Deploy"**. Vercel will build your project and provide you with a public URL.
+1.  **Sube tu código a un repositorio Git** (como GitHub, GitLab o Bitbucket).
+2.  **Regístrate en una cuenta de Vercel** (puedes usar tu cuenta de GitHub).
+3.  **Importa tu repositorio Git** a Vercel.
+4.  Vercel detectará automáticamente que es un proyecto Next.js. Usará el comando de compilación correcto (`npm run build`) y el directorio de salida (`.next`).
+5.  Haz clic en **"Deploy"**. Vercel compilará tu proyecto y te proporcionará una URL pública.
 
-This process gives you a fully functional, live web application that you can share with anyone.
+Este proceso te dará una aplicación web completamente funcional y en vivo que puedes compartir con cualquiera.
 
 ---
 
-## Demo Credentials
+## Credenciales de Demostración
 
-A list of demo user accounts with different roles can be found in the `CREDENTIALS.md` file.
+Una lista de cuentas de usuario de demostración con diferentes roles se puede encontrar en el archivo `CREDENTIALS.md`.
