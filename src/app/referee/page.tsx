@@ -1,5 +1,8 @@
 'use client';
 
+import io from 'socket.io-client';
+'use client';
+
 import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useScoreboard } from '@/context/ScoreboardContext';
@@ -11,8 +14,7 @@ import type { Scoreboard as ScoreboardType, UserRole } from '@/lib/types';
 import DashboardLayout from '@/components/dashboard-layout';
 import ThemeCustomizer from '@/components/theme-customizer';
 import {
- import io from 'socket.io-client';
- import { Socket } from 'socket.io-client';
+ Socket,
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,

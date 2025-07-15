@@ -1,6 +1,8 @@
 'use client';
 
 import type { Ad, User, Theme, TimerState, Scoreboard, UserRole, GlobalState, SetScore } from '@/lib/types';
+import io from 'socket.io-client';
+import { Socket } from 'socket.io-client';
 import React, from 'react';
 
 const pointValues = ['0', '15', '30', '40', 'AD'];
@@ -99,6 +101,7 @@ const SESSION_STORAGE_USER_KEY = 'padelCurrentUser_v15';
 export function ScoreboardProvider({ children }: { children: React.ReactNode }) {
   const [globalState, setGlobalState] = React.useState<GlobalState>(defaultState);
   const [currentUser, setCurrentUser] = React.useState<User | null>(null);
+  const [socket, setSocket] = React.useState<Socket | null>(null);
   const [isInitialized, setIsInitialized] = React.useState(false);
 
   React.useEffect(() => {
@@ -125,6 +128,28 @@ export function ScoreboardProvider({ children }: { children: React.ReactNode }) 
     setIsInitialized(true);
   }, []);
 
+  React.useEffect(() => {
+    const newSocket = io('http://localhost:3001'); // REPLACE with your deployed WebSocket server URL
+    setSocket(newSocket);
+
+    newSocket.on('connect', () => {
+      console.log('Contexto conectado al servidor WebSocket');
+    });
+
+    newSocket.on('disconnect', () => {
+      console.log('Contexto desconectado del servidor WebSocket');
+    });
+
+    newSocket.on('marcadorActualizado', (updatedGlobalState: GlobalState) => {
+      console.log('Estado global actualizado recibido vía WebSocket:', updatedGlobalState);
+      // Update the context state with the received data
+      setGlobalState(updatedGlobalState);
+    });
+
+    return () => {
+      newSocket.disconnect();
+    };
+  }, []); // Empty dependency array means this runs once on mount
   React.useEffect(() => {
     if (!isInitialized) return;
 
@@ -161,7 +186,8 @@ export function ScoreboardProvider({ children }: { children: React.ReactNode }) 
     };
   }, [isInitialized]);
 
-  const updateStateAndStorage = React.useCallback((updater: (prevState: GlobalState) => GlobalState) => {
+ const updateStateAndStorage = React.useCallback((updater: (prevState: GlobalState) => GlobalState) => {
+
     setGlobalState(currentState => {
         const newState = updater(currentState);
         if (typeof window !== 'undefined') {
