@@ -11,6 +11,8 @@ import type { Scoreboard as ScoreboardType, UserRole } from '@/lib/types';
 import DashboardLayout from '@/components/dashboard-layout';
 import ThemeCustomizer from '@/components/theme-customizer';
 import {
+ import io from 'socket.io-client';
+ import { Socket } from 'socket.io-client';
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -140,6 +142,7 @@ function RefereePageView() {
     updateScoreboard,
     isInitialized,
   } = useScoreboard();
+ const [socket, setSocket] = useState<Socket | null>(null);
   const router = useRouter();
   const [activeView, setActiveView] = useState('live');
 
@@ -164,7 +167,19 @@ function RefereePageView() {
       router.push('/'); 
     }
   }, [currentUser, router, isInitialized]);
-  
+
+  useEffect(() => {
+    const newSocket = io('http://localhost:3001');
+    setSocket(newSocket);
+
+    newSocket.on('connect', () => {
+      console.log('Conectado al servidor WebSocket');
+    });
+
+    newSocket.on('disconnect', () => {
+      console.log('Desconectado del servidor WebSocket');
+    });
+  }, []);
   const renderView = () => {
     switch (activeView) {
       case 'theme':
@@ -179,6 +194,18 @@ function RefereePageView() {
       case 'live':
       default:
         return scoreboard ? <RefereeControls scoreboard={scoreboard} /> : <div className="p-4 text-center">Cargando control de cancha... Si esto persiste, contacte a un administrador para que le asigne una.</div>;
+    }
+  };
+
+  // Modify the handleScoreChange function. Inside this function, after any existing logic, add the following code to emit the websocket event:
+  const handleScoreChange = (scoreboardId: string, team: 'teamA' | 'teamB', points: number) => {
+    if (socket && scoreboard) {
+      const updatedScoreboard = {
+          ...scoreboard,
+          score: {
+              ...scoreboard.score,
+              [team]: (scoreboard.score[team] || 0) + points
+          }
     }
   };
 

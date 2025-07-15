@@ -2,8 +2,10 @@
 
 import { useScoreboard } from '@/context/ScoreboardContext';
 import Scoreboard from '@/components/scoreboard';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import io from 'socket.io-client';
+
 
 export default function OverlayPage() {
   const params = useParams() as { courtId: string };
@@ -20,6 +22,27 @@ export default function OverlayPage() {
     };
   }, []); // Empty dependency array means this runs once on mount and cleans up on unmount
 
+ const [currentScoreboard, setCurrentScoreboard] = useState(scoreboards.find(sb => sb.id === params.courtId));
+
+  // New Effect for WebSocket connection and event listening
+  useEffect(() => {
+    const socket = io('http://localhost:3001'); // Replace with your server URL if different
+
+    socket.on('connect', () => {
+      console.log('Overlay conectado al servidor WebSocket');
+    });
+
+    socket.on('disconnect', () => {
+      console.log('Overlay desconectado del servidor WebSocket');
+    });
+
+    socket.on('marcadorActualizado', (updatedScoreboards) => { // Assuming array of scoreboards is received
+      console.log('Actualización de marcador recibida en Overlay:', updatedScoreboards);
+      const updatedThisScoreboard = updatedScoreboards.find(sb => sb.id === params.courtId);
+      if (updatedThisScoreboard) {
+         setCurrentScoreboard(updatedThisScoreboard);
+      }
+    });
 
   // Wait for the context to be initialized on the client to prevent hydration errors
   if (!isInitialized) {
@@ -27,8 +50,12 @@ export default function OverlayPage() {
   }
 
   const scoreboard = scoreboards.find(sb => sb.id === params.courtId);
+    return () => {
+      socket.disconnect();
+    };
+  }, [params.courtId]); // Dependency on courtId
 
-  if (!scoreboard || !scoreboard.isActive) {
+  if (!currentScoreboard || !currentScoreboard.isActive) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <div className="rounded-lg bg-card p-4 text-center text-card-foreground">
@@ -42,16 +69,16 @@ export default function OverlayPage() {
     <div className="w-full h-screen flex items-center justify-center p-4">
         <div className="w-full max-w-4xl">
             <Scoreboard
-                teams={scoreboard.teams}
-                score={scoreboard.score}
+                teams={currentScoreboard.teams}
+                score={currentScoreboard.score}
                 pointValues={pointValues}
-                timers={scoreboard.timers}
+                timers={currentScoreboard.timers}
                 theme={theme}
                 isReadOnly={true}
                 isOverlay={true}
-                servingTeam={scoreboard.servingTeam}
-                tournamentName={scoreboard.tournamentName}
-                matchName={scoreboard.matchName}
+                servingTeam={currentScoreboard.servingTeam}
+                tournamentName={currentScoreboard.tournamentName}
+                matchName={currentScoreboard.matchName}
             />
         </div>
     </div>

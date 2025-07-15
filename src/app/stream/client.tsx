@@ -13,6 +13,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import Autoplay from "embla-carousel-autoplay";
 import ErrorBoundary from '@/components/error-boundary';
 import type { GlobalState } from '@/lib/types';
+import io from 'socket.io-client';
 import PublicThemeHandler from '@/components/public-theme-handler';
 
 
